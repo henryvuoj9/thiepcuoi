@@ -4,6 +4,7 @@ const express = require("express");
 const zlib = require("node:zlib");
 const { join } = require("node:path");
 
+const dbErrors = require("./db-errors");
 const invite = require("./routes/invite");
 const admin = require("./routes/admin");
 const api = require("./routes/api");
@@ -87,7 +88,20 @@ function createApp() {
   app.use((err, req, res, next) => {
     console.error("Lỗi không bắt được:", err);
     if (res.headersSent) return next(err);
-    res.status(500).type("text/plain; charset=utf-8").send("Máy chủ gặp sự cố. Thử lại sau ít phút.");
+
+    /* Lỗi cấu hình hay lỗi kết nối CSDL thì nói thẳng phải sửa gì — không thì
+       người dựng trang chỉ thấy "có sự cố" và phải đoán qua nhiều vòng.
+       Chỉ hiện mã lỗi và lời khuyên, không hiện giá trị cấu hình nào. */
+    const lines = ["Máy chủ gặp sự cố. Thử lại sau ít phút."];
+
+    if (dbErrors.isMissingConfig(err)) {
+      lines.push("", `Cấu hình: ${err.message}`);
+    } else {
+      const found = dbErrors.explain(err);
+      if (found) lines.push("", `Mã lỗi: ${found.code}`, found.hint);
+    }
+
+    res.status(500).type("text/plain; charset=utf-8").send(lines.join("\n"));
   });
 
   return app;
