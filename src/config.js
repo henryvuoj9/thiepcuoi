@@ -30,31 +30,44 @@ function loadEnv(file) {
   }
 }
 
+/* Luôn gọt khoảng trắng hai đầu. Giá trị đi qua ô nhập của cPanel, qua clipboard,
+   qua trình soạn thảo — một dấu cách hay ký tự xuống dòng lọt vào là mọi thứ hỏng
+   âm thầm: tên đăng nhập không khớp, chuỗi hex giải mã lệch, và biểu hiện ra ngoài
+   chỉ là "sai mật khẩu". */
+function clean(value) {
+  return String(value === undefined || value === null ? "" : value).trim();
+}
+
+function optional(name, fallback) {
+  const value = clean(process.env[name]);
+  return value || fallback;
+}
+
 function required(name) {
-  const value = process.env[name];
+  const value = clean(process.env[name]);
   if (!value) throw new Error(`Thiếu biến môi trường ${name} — xem .env.example`);
   return value;
 }
 
 const config = {
   get siteUrl() {
-    return (process.env.SITE_URL || "https://vulinh.site").replace(/\/+$/, "");
+    return optional("SITE_URL", "https://vulinh.site").replace(/\/+$/, "");
   },
   get sessionSecret() {
     return required("SESSION_SECRET");
   },
   get adminUser() {
-    return process.env.ADMIN_USER || "admin";
+    return optional("ADMIN_USER", "admin");
   },
   get adminPasswordHash() {
     return required("ADMIN_PASSWORD_HASH");
   },
   get db() {
     return {
-      host: process.env.DB_HOST || "localhost",
-      port: Number(process.env.DB_PORT || 3306),
+      host: optional("DB_HOST", "localhost"),
+      port: Number(optional("DB_PORT", "3306")),
       user: required("DB_USER"),
-      password: process.env.DB_PASSWORD || "",
+      password: clean(process.env.DB_PASSWORD),
       database: required("DB_NAME"),
     };
   },
