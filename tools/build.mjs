@@ -185,7 +185,10 @@ function build() {
       `  .ring.on{opacity:1}\n` +
       `  .ring circle{fill:none;stroke-width:1.2;stroke-linecap:round}\n` +
       `  .ring .trk{stroke:rgba(246,242,236,.16)}\n` +
-      `  .ring .bar{stroke:rgba(246,242,236,.75);transition:stroke-dashoffset .3s linear}\n</style>`,
+      `  .ring .bar{stroke:rgba(246,242,236,.75);transition:stroke-dashoffset .3s linear}\n` +
+      // Chưa tải xong thì không mời gọi chạm: bìa chưa mở được, mời gọi chỉ gây bực.
+      `  .cover .open{animation:none;opacity:0}\n` +
+      `  .cover.ready .open{animation:up .8s var(--ease) forwards,hint 3s ease-in-out .9s infinite}\n</style>`,
     "thẻ đóng style"
   );
 
@@ -276,6 +279,36 @@ function build() {
         $("rsvpForm").classList.add("hide"); $("thanks").classList.add("show"); })
       .catch(() => { btn.disabled = false; btn.textContent = label === "Gửi lại" ? label : "Gửi lại"; }); });`,
     "trình xử lý gửi xác nhận"
+  );
+
+  /* 14. Bỏ dòng chữ "Mở thư và phát nhạc", giữ lại mũi chỉ xuống làm dấu chạm. */
+  html = replaceOnce(
+    html,
+    /<p class="sc open">[^<]*<i>&#8964;<\/i><\/p>/,
+    () => `<p class="sc open" aria-hidden="true"><i>&#8964;</i></p>`,
+    "dòng nhắc trên bìa"
+  );
+
+  /* 15. Khoá cánh cửa: chưa tải xong thì chạm cũng không mở, và không phát nhạc.
+         Đổi lại, lúc mở ra toàn bộ thiệp hiện ngay, không ảnh nào nhảy vào sau. */
+  html = replaceOnce(
+    html,
+    /function open\(\)\{ if \(opened\) return; opened = true;/,
+    () => `function open(){ if (opened || !window.__assetsReady()) return; opened = true;`,
+    "hàm mở thiệp"
+  );
+
+  /* 16. Chỉ đi tìm tệp logo khi thực sự có khai báo.
+         Bản gốc luôn thử tải "logo.png"; tệp đó không tồn tại nên mỗi lượt khách
+         tốn một request 404 rồi mới rơi về chữ lồng. */
+  html = replaceOnce(
+    html,
+    /const probe = new Image\(\);[^\n]*probe\.src = D\.logo \|\| "logo\.png";/,
+    () =>
+      `if (D.logo) { const probe = new Image(); probe.onload = () => { const m = $("mono"); ` +
+      `m.innerHTML = ""; m.appendChild(probe); m.classList.add("has-img"); }; ` +
+      `probe.alt = "Monogram"; probe.src = D.logo; }`,
+    "đoạn dò tệp logo"
   );
 
   writeFileSync(OUT_TEMPLATE, html);

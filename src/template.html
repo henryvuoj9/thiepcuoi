@@ -37,6 +37,8 @@
   .ring circle{fill:none;stroke-width:1.2;stroke-linecap:round}
   .ring .trk{stroke:rgba(246,242,236,.16)}
   .ring .bar{stroke:rgba(246,242,236,.75);transition:stroke-dashoffset .3s linear}
+  .cover .open{animation:none;opacity:0}
+  .cover.ready .open{animation:up .8s var(--ease) forwards,hint 3s ease-in-out .9s infinite}
 </style>
 <style>
   @font-face{font-family:"New Icon Script VN";font-style:normal;font-weight:400;font-display:swap;src:url(/assets/script.b7edc9a0.woff2) format("woff2");}
@@ -252,12 +254,12 @@
 <script>/**
  * Bộ nạp tài nguyên của màn bìa.
  *
- * Màn bìa chính là màn hình chờ: khách ngắm phong bì trong lúc ảnh, font và nhạc
- * chảy về nền. Con tem bắt đầu đập khi mọi thứ sẵn sàng — thay cho mốc 2,6 giây
- * tuỳ tiện của bản gốc.
+ * Màn bìa là màn hình chờ, và là một cánh cửa khoá: khách KHÔNG mở được thiệp
+ * cho tới khi mọi ảnh bên trong và nhạc đã về đủ. Đổi lại, lúc mở ra thì toàn
+ * bộ thiệp hiện ngay lập tức, không có ảnh nào nhảy vào sau.
  *
- * Tải xong một lần thì HTTP cache của trình duyệt giữ lại (tên file có mã băm +
- * header immutable), nên lần mở sau không tải lại.
+ * Tải xong một lần thì HTTP cache của trình duyệt giữ lại (tên tệp có mã băm +
+ * header immutable), nên lần mở sau gần như tức thì.
  */
 (function () {
   var M = window.__ASSETS || { assets: [], audio: null };
@@ -267,9 +269,14 @@
   var audioCtl = typeof AbortController === "function" ? new AbortController() : null;
   var bgmSrcSet = false;
 
-  window.__onAssetsReady = function (cb) { settled ? cb() : waiting.push(cb); };
+  /* Mạng hỏng giữa chừng thì vẫn phải mở được thiệp — thà thiếu một ảnh còn
+     hơn khách đứng trước cánh cửa khoá vĩnh viễn. */
+  var MAX_WAIT_MS = 15000;
 
-  /* Khách chạm mở trước khi tải xong: bỏ việc tải nền, cho thẻ audio tự phát dần. */
+  window.__onAssetsReady = function (cb) { settled ? cb() : waiting.push(cb); };
+  window.__assetsReady = function () { return settled; };
+
+  /* Dự phòng: nếu tải nhạc hỏng, vẫn gắn nguồn để thẻ audio tự phát dần. */
   window.__bgmEnsure = function () {
     if (bgmSrcSet || !M.audio) return;
     bgmSrcSet = true;
@@ -288,8 +295,7 @@
 
   function paint() {
     if (!bar || !total) return;
-    var p = Math.min(1, loaded / total);
-    bar.style.strokeDashoffset = String(CIRC * (1 - p));
+    bar.style.strokeDashoffset = String(CIRC * (1 - Math.min(1, loaded / total)));
   }
 
   function advance(n) { loaded += n; paint(); }
@@ -313,6 +319,23 @@
     });
   }
 
+  /**
+   * Nằm trong HTTP cache chưa đủ: trình duyệt vẫn phải giải mã ảnh, và việc đó
+   * xảy ra đúng lúc phong bì mở ra — đó là lý do ảnh bên trong "nhảy vào sau".
+   * Giải mã sẵn ở đây để lúc mở thiệp mọi thứ đã nằm trong bộ nhớ ảnh.
+   */
+  function decodeImage(url) {
+    if (!/\.(jpg|jpeg|png|webp|gif)$/i.test(url)) return Promise.resolve();
+    return new Promise(function (done) {
+      var img = new Image();
+      img.onload = img.onerror = function () {
+        if (img.decode) img.decode().then(done, done);
+        else done();
+      };
+      img.src = url;
+    });
+  }
+
   function start() {
     ring = document.getElementById("loadRing");
     bar = ring && ring.querySelector(".bar");
@@ -322,43 +345,43 @@
     }
 
     var list = (M.assets || []).slice();
-    var saveData = navigator.connection && navigator.connection.saveData;
-    var wantAudio = M.audio && !saveData;
-
     for (var i = 0; i < list.length; i++) total += list[i].bytes || 0;
-    if (wantAudio) total += M.audio.bytes || 0;
+    if (M.audio) total += M.audio.bytes || 0;
     if (!total) return finish();
 
-    if (ring) setTimeout(function () { if (!settled) ring.classList.add("on"); }, 400);
+    if (ring) setTimeout(function () { if (!settled) ring.classList.add("on"); }, 300);
 
-    /* Lưới an toàn: mạng quá chậm thì vẫn mở khoá con tem, đừng bắt khách chờ mãi. */
-    var guard = setTimeout(finish, 12000);
+    var guard = setTimeout(finish, MAX_WAIT_MS);
 
-    var jobs = list.map(function (a) { return grab(a.url).catch(function () { advance(a.bytes || 0); }); });
+    var jobs = list.map(function (a) {
+      return grab(a.url)
+        .then(function () { return decodeImage(a.url); })
+        .catch(function () { advance(a.bytes || 0); });
+    });
 
-    if (wantAudio) {
-      jobs.push(
-        grab(M.audio.url, audioCtl && audioCtl.signal)
-          .then(function (blob) {
-            if (bgmSrcSet || !blob) return;
-            bgmSrcSet = true;
-            var el = document.getElementById("bgm");
-            if (el) el.src = URL.createObjectURL(blob);
-          })
-          .catch(function () { advance(M.audio.bytes || 0); })
-      );
-    }
+    jobs.push(
+      M.audio
+        ? grab(M.audio.url, audioCtl && audioCtl.signal)
+            .then(function (blob) {
+              if (bgmSrcSet || !blob) return;
+              bgmSrcSet = true;
+              var el = document.getElementById("bgm");
+              if (el) el.src = URL.createObjectURL(blob);
+            })
+            .catch(function () { advance(M.audio.bytes || 0); })
+        : Promise.resolve()
+    );
 
     Promise.all(jobs).then(function () { clearTimeout(guard); finish(); });
   }
 
-  /* Không có fetch (trình duyệt rất cũ) thì bỏ qua toàn bộ, thiệp vẫn chạy bình thường. */
+  /* Trình duyệt quá cũ: bỏ qua toàn bộ, thiệp vẫn chạy như bản gốc. */
   if (typeof fetch !== "function" || typeof Promise !== "function") {
     window.__bgmEnsure = function () {
       var el = document.getElementById("bgm");
       if (el && M.audio && !el.src) el.src = M.audio.url;
     };
-    window.__onAssetsReady = function (cb) { setTimeout(cb, 2600); };
+    window.__onAssetsReady = function (cb) { setTimeout(function () { settled = true; cb(); }, 2600); };
   } else if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", start);
   } else {
@@ -382,7 +405,7 @@
   <div class="stamp" id="stamp"></div>
   <svg class="ring" id="loadRing" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="48"/><circle class="bar" cx="50" cy="50" r="48"/></svg>
   <div class="guest" id="guestBlock"><p class="sc" id="guestLabel">Trân trọng kính mời</p><p class="name fit" id="guestName">{Tên khách}</p></div>
-  <p class="sc open">Mở thư và phát nhạc<i>&#8964;</i></p>
+  <p class="sc open" aria-hidden="true"><i>&#8964;</i></p>
 </div>
 <div class="flash" id="flash"></div>
 <audio id="bgm" loop preload="none"></audio>
@@ -534,7 +557,7 @@ const ICONS = {
   $("rsvpNote").innerHTML = `Vui lòng xác nhận <b style="font-weight:700;font-style:normal">trước ngày ${D.rsvpDeadline}</b> để gia đình chuẩn bị chu đáo nhất.`;
   $("footerContact").innerHTML = `Mọi thắc mắc xin liên hệ cô dâu chú rể<br><a href="tel:${D.contact.tel}">${D.contact.label}</a>`;
   $("calBtn").href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(D.calTitle)}&dates=${D.calStart}/${D.calEnd}&ctz=Asia/Ho_Chi_Minh&location=${encodeURIComponent(D.mapQuery)}`;
-  const probe = new Image(); probe.onload = () => { const m = $("mono"); m.innerHTML = ""; m.appendChild(probe); m.classList.add("has-img"); }; probe.alt = "Monogram"; probe.src = D.logo || "logo.png";
+  if (D.logo) { const probe = new Image(); probe.onload = () => { const m = $("mono"); m.innerHTML = ""; m.appendChild(probe); m.classList.add("has-img"); }; probe.alt = "Monogram"; probe.src = D.logo; }
 
   /* lịch trình + dây uốn lượn nối các icon */
   const tl = $("tl");
@@ -588,7 +611,7 @@ const ICONS = {
   if (new URLSearchParams(location.search).get("open") === "1") { opened = true; cover.style.display = "none"; document.body.classList.remove("locked"); }
   const bgm = $("bgm"); bgm.volume = D.musicVolume;
   $("musicBtn").addEventListener("click", () => { if (bgm.paused) { bgm.play(); $("musicBtn").classList.remove("off"); } else { bgm.pause(); $("musicBtn").classList.add("off"); } });
-  function open(){ if (opened) return; opened = true; cover.classList.add("opening");
+  function open(){ if (opened || !window.__assetsReady()) return; opened = true; cover.classList.add("opening");
     window.__bgmEnsure(); bgm.play().then(() => { $("musicBtn").hidden = false; }).catch(() => {});
     setTimeout(() => $("flash").classList.add("on"), 1150);
     setTimeout(() => { cover.classList.add("gone"); document.body.classList.remove("locked"); window.scrollTo(0,0); const c = document.querySelector(".comp"); c.classList.add("in","shake"); setTimeout(() => $("flash").classList.remove("on"), 300); }, 1500); }

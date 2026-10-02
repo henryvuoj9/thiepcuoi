@@ -64,3 +64,43 @@ test("font chữ ký được khai báo tải trước ở thẻ head", () => {
 test("chỗ máy chủ chèn tên khách vẫn còn", () => {
   assert.ok(HTML.includes("<!--GUEST-->"));
 });
+
+/* ---------- hành vi màn bìa ---------- */
+
+test("đã bỏ dòng chữ mời mở thư", () => {
+  assert.ok(!HTML.includes("Mở thư và phát nhạc"));
+});
+
+test("chưa tải xong thì chạm cũng không mở được thiệp", () => {
+  /* Yêu cầu của chủ thiệp: mở ra là phải thấy đủ, không có ảnh nào nhảy vào
+     sau, và không có nhạc phát dở. Nên cánh cửa khoá cho tới khi tải xong. */
+  assert.match(HTML, /function open\(\)\{ if \(opened \|\| !window\.__assetsReady\(\)\) return;/);
+  assert.match(HTML, /window\.__assetsReady = function \(\) \{ return settled; \};/);
+});
+
+test("dấu mời chạm chỉ hiện sau khi tải xong", () => {
+  assert.match(HTML, /\.cover \.open\{animation:none;opacity:0\}/);
+  assert.match(HTML, /\.cover\.ready \.open\{animation:up/);
+});
+
+test("ảnh được giải mã sẵn, không chỉ tải về", () => {
+  /* Nằm trong HTTP cache chưa đủ — trình duyệt vẫn giải mã lúc phong bì mở ra,
+     và đó chính là lúc ảnh nhảy vào sau. */
+  assert.match(HTML, /function decodeImage\(url\)/);
+  assert.match(HTML, /img\.decode\(\)/);
+});
+
+test("có lưới an toàn để mạng hỏng không khoá chết thiệp", () => {
+  assert.match(HTML, /MAX_WAIT_MS = \d+/);
+  assert.match(HTML, /setTimeout\(finish, MAX_WAIT_MS\)/);
+});
+
+test("mọi ảnh bên trong thiệp đều nằm trong danh sách phải tải xong trước", () => {
+  const manifest = JSON.parse(/window\.__ASSETS=(\{.*?\})<\/script>/s.exec(HTML)[1]);
+  const urls = manifest.assets.map((a) => a.url).join(" ");
+
+  for (const name of ["lace-frame", "swan", "orchid", "photo", "plaster", "env-open"]) {
+    assert.ok(urls.includes("/assets/" + name + "."), `thiếu ${name} — ảnh này sẽ nhảy vào sau khi mở thiệp`);
+  }
+  assert.ok(manifest.audio && manifest.audio.url, "nhạc phải tải xong trước khi mở");
+});
