@@ -53,6 +53,7 @@ const EXT = {
 };
 
 const written = [];
+const selfHostedFonts = new Set(); // không nằm trong danh sách nạp sẵn: unicode-range quyết định tải cái nào
 
 function hash(buf) {
   return createHash("sha256").update(buf).digest("hex").slice(0, 8);
@@ -106,6 +107,31 @@ function build() {
     /src:url\(data:(font\/woff2);base64,([A-Za-z0-9+/=]+)\)/,
     (m) => `src:url(${fromBase64(m[1], m[2], "script")})`,
     "font woff2"
+  );
+
+  /* 3b. Font chữ tự host.
+     File gốc trỏ sang fonts.googleapis.com với hai họ font XẾP SAI THỨ TỰ bảng
+     chữ cái — Google trả 404 và không font nào tải được, toàn bộ chữ rơi về
+     Georgia. Nhúng thẳng @font-face vào trang thì vừa sửa hẳn lỗi đó, vừa bỏ
+     được một chặng DNS + TLS + tải CSS trước khi font kịp bắt đầu tải. */
+  const fontDir = join(ROOT, "source", "fonts");
+  const fonts = JSON.parse(readFileSync(join(fontDir, "manifest.json"), "utf8"));
+  const faceRules = fonts
+    .map((f) => {
+      const url = emit(f.file.replace(/\.woff2$/, ""), "woff2", readFileSync(join(fontDir, f.file)));
+      selfHostedFonts.add(url);
+      return (
+        `@font-face{font-family:'${f.family}';font-style:${f.style};font-weight:${f.weight};` +
+        `font-display:swap;src:url(${url}) format('woff2');unicode-range:${f.range}}`
+      );
+    })
+    .join("\n  ");
+
+  html = replaceOnce(
+    html,
+    /<link rel="preconnect" href="https:\/\/fonts\.googleapis\.com">[\s\S]*?<link href="https:\/\/fonts\.googleapis\.com[^>]*>/,
+    () => `<style>\n  ${faceRules}\n</style>`,
+    "thẻ link tới Google Fonts"
   );
 
   /* 4. Ảnh cưới trong window.DATA. */
@@ -174,7 +200,9 @@ function build() {
     .join("\n");
 
   const manifest = {
-    assets: written.filter((a) => !a.name.startsWith("bgm")).map((a) => ({ url: a.url, bytes: a.bytes })),
+    assets: written
+      .filter((a) => !a.name.startsWith("bgm") && !selfHostedFonts.has(a.url))
+      .map((a) => ({ url: a.url, bytes: a.bytes })),
     audio,
   };
   const loader = readFileSync(join(ROOT, "src", "client", "loader.js"), "utf8");

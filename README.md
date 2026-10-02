@@ -185,6 +185,8 @@ Rồi deploy lại như bước "Cập nhật về sau".
 source/invitation.html   bản gốc 4.9 MB, mọi thứ nhúng inline — nguồn duy nhất
 tools/build.mjs          tách tài nguyên, cắt nhạc, sinh template
 tools/audio.mjs          cắt + nén nhạc bằng afconvert của macOS
+tools/fetch-fonts.mjs    tải font Google về source/fonts/ (chạy tay, hiếm khi cần)
+source/fonts/            font tự host, có commit — thiệp không gọi ra Internet
 src/template.html        ĐẦU RA của build (45 KB) — có commit, đừng sửa tay
 public/assets/           ĐẦU RA của build — có commit, đừng sửa tay
 src/server.js            khung Express
@@ -209,6 +211,11 @@ và nhờ vậy deploy chỉ còn là chép tệp.
 - **"Lần sau khỏi tải" phụ thuộc HTTP cache của trình duyệt.** Safari trên iPhone
   dọn cache sau khoảng 7 ngày không ghé thăm, khi đó khách tải lại. Không hỏng,
   chỉ chậm như lần đầu.
+- **Thiệp không tải font từ Google nữa.** File gốc trỏ sang
+  `fonts.googleapis.com` với hai họ font xếp sai thứ tự bảng chữ cái — Google
+  trả 404 và **không font nào tải được**, toàn bộ chữ rơi về Georgia. Giờ font
+  nằm trong `source/fonts/` và được nhúng thẳng vào trang. Muốn đổi bộ chữ thì
+  sửa `tools/fetch-fonts.mjs` rồi chạy `node tools/fetch-fonts.mjs && npm run build`.
 - **Biến môi trường không được chứa ký tự `$`.** cPanel cho giá trị đi qua một
   lớp shell, nên `$abc` bị nuốt thành chuỗi rỗng. Vì vậy chuỗi băm mật khẩu
   ngăn bằng dấu chấm. Có kiểm thử chặn không cho `$` quay lại.
