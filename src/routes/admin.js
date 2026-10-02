@@ -63,6 +63,70 @@ function back(res, path, ok, text) {
   res.redirect(`${path}?${key}=${encodeURIComponent(text)}`);
 }
 
+/* ---------- trang chẩn đoán ----------
+   Chỉ nói HÌNH DẠNG của cấu hình, không bao giờ nói giá trị: có đặt chưa, dài
+   bao nhiêu, đúng dạng không, CSDL nối được không. Đủ để tìm ra lỗi cấu hình
+   mà không lộ gì cho người lạ.
+   Mở khoá bằng 8 ký tự đầu của SESSION_SECRET để người ngoài không dò được. */
+
+router.get("/diag", async (req, res) => {
+  let secret;
+  try {
+    secret = config.sessionSecret;
+  } catch {
+    return res.status(500).type("text/plain; charset=utf-8").send("Chưa đặt SESSION_SECRET.");
+  }
+  if (String(req.query.k || "") !== secret.slice(0, 8)) return res.redirect("/admin/login");
+
+  const shape = (name, test) => {
+    const raw = process.env[name];
+    if (raw === undefined) return `${name}: CHƯA ĐẶT`;
+    const trimmed = raw.trim();
+    const bits = [`dài ${trimmed.length}`];
+    if (trimmed.length !== raw.length) bits.push("CÓ KHOẢNG TRẮNG THỪA (đã tự gọt)");
+    if (test) bits.push(test(trimmed) ? "đúng dạng" : "SAI DẠNG");
+    return `${name}: ${bits.join(", ")}`;
+  };
+
+  const lines = [
+    "CHẨN ĐOÁN CẤU HÌNH",
+    "",
+    `Phiên bản mã nguồn: ${require("../../package.json").version}`,
+    "",
+    shape("SITE_URL"),
+    shape("ADMIN_USER"),
+    shape("ADMIN_PASSWORD_HASH", auth.looksLikeHash),
+    shape("SESSION_SECRET", (v) => /^[0-9a-f]{32,}$/.test(v)),
+    shape("DB_HOST"),
+    shape("DB_NAME"),
+    shape("DB_USER"),
+    shape("DB_PASSWORD"),
+  ];
+
+  if (process.env.ADMIN_PASSWORD_HASH !== undefined && !auth.looksLikeHash(config.adminPasswordHash)) {
+    lines.push(
+      "",
+      ">>> ADMIN_PASSWORD_HASH sai dạng. Phải là: scrypt.<32 ký tự hex>.<64 ký tự hex>",
+      `>>> Hiện đang bắt đầu bằng: ${JSON.stringify(config.adminPasswordHash.slice(0, 12))}`,
+      ">>> Nếu nó chỉ còn mỗi chữ 'scrypt' thì dấu $ đã bị shell nuốt — dùng bản",
+      ">>> ngăn bằng dấu chấm do `npm run hash-password` sinh ra."
+    );
+  }
+
+  lines.push("", "CƠ SỞ DỮ LIỆU");
+  try {
+    await db.query("SELECT 1");
+    const rows = await db.query("SELECT COUNT(*) AS n FROM guests");
+    lines.push(`Kết nối: OK. Bảng guests có ${rows[0].n} dòng.`);
+  } catch (err) {
+    lines.push(`Kết nối: HỎNG. Mã lỗi: ${err.code || "(không có mã)"}`);
+    const found = require("../db-errors").explain(err);
+    if (found) lines.push(found.hint);
+  }
+
+  res.type("text/plain; charset=utf-8").set("Cache-Control", "no-store").send(lines.join("\n"));
+});
+
 /* ---------- đăng nhập ---------- */
 
 router.get("/login", (req, res) => {

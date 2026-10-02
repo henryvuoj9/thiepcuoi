@@ -85,3 +85,55 @@ test("thiệp vẫn phục vụ khách bình thường dù CSDL hỏng", async (
   assert.equal(res.status, 200, "khách không được thấy lỗi — đây là thiệp cưới");
   assert.ok(!(await res.text()).includes("window.GUEST="));
 });
+
+/* ---------- trang chẩn đoán ---------- */
+
+test("không có khoá thì không xem được trang chẩn đoán", async () => {
+  const res = await makeClient(app.base)("/admin/diag");
+  assert.equal(res.status, 302);
+  assert.equal(res.headers.get("location"), "/admin/login");
+
+  const wrong = await makeClient(app.base)("/admin/diag?k=sai-khoa");
+  assert.equal(wrong.status, 302);
+});
+
+test("đúng khoá thì báo hình dạng cấu hình", async () => {
+  const k = process.env.SESSION_SECRET.slice(0, 8);
+  const body = await (await makeClient(app.base)(`/admin/diag?k=${k}`)).text();
+
+  assert.match(body, /ADMIN_PASSWORD_HASH: dài \d+, đúng dạng/);
+  assert.match(body, /SESSION_SECRET/);
+  assert.match(body, /CƠ SỞ DỮ LIỆU/);
+});
+
+test("trang chẩn đoán không được lộ giá trị cấu hình nào", async () => {
+  const k = process.env.SESSION_SECRET.slice(0, 8);
+  const body = await (await makeClient(app.base)(`/admin/diag?k=${k}`)).text();
+
+  assert.ok(!body.includes(process.env.SESSION_SECRET), "không được in SESSION_SECRET");
+  assert.ok(!body.includes(process.env.ADMIN_PASSWORD_HASH), "không được in chuỗi băm");
+  assert.ok(!body.includes(app.password), "không được in mật khẩu");
+});
+
+test("chuỗi băm bị shell nuốt thì trang chẩn đoán chỉ thẳng ra", async () => {
+  const good = process.env.ADMIN_PASSWORD_HASH;
+  process.env.ADMIN_PASSWORD_HASH = "scrypt";
+
+  const k = process.env.SESSION_SECRET.slice(0, 8);
+  const body = await (await makeClient(app.base)(`/admin/diag?k=${k}`)).text();
+
+  process.env.ADMIN_PASSWORD_HASH = good;
+  assert.match(body, /SAI DẠNG/);
+  assert.match(body, /dấu \$ đã bị shell nuốt/);
+});
+
+test("phát hiện khoảng trắng thừa trong giá trị", async () => {
+  const good = process.env.ADMIN_USER;
+  process.env.ADMIN_USER = "admin  ";
+
+  const k = process.env.SESSION_SECRET.slice(0, 8);
+  const body = await (await makeClient(app.base)(`/admin/diag?k=${k}`)).text();
+
+  process.env.ADMIN_USER = good;
+  assert.match(body, /CÓ KHOẢNG TRẮNG THỪA/);
+});
