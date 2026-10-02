@@ -9,7 +9,7 @@
  * Kết quả được commit vào Git để deploy chỉ còn là chép tệp.
  */
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, rmSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { encodeVariants } from "./audio.mjs";
@@ -49,6 +49,7 @@ const EXT = {
   "image/webp": "webp",
   "image/jpeg": "jpg",
   "image/png": "png",
+  "image/svg+xml": "svg",
   "font/woff2": "woff2",
 };
 
@@ -141,6 +142,21 @@ function build() {
     (m) => `photo: "${fromBase64(m[1], m[2], "photo")}"`,
     "ảnh cưới"
   );
+
+  /* 4b. Logo riêng: thả tệp vào source/logo.(png|svg|webp|jpg) là tự nhận.
+          Có logo thì vòng tròn chữ lồng "VL" ở cuối thiệp được thay bằng ảnh
+          (CSS .mono.has-img::before đã lo việc giấu vòng tròn đi).
+          Nền chỗ đó là màu nâu ấm, nên logo sáng màu / nền trong suốt hợp nhất. */
+  const logoFile = ["png", "svg", "webp", "jpg"]
+    .map((ext) => join(ROOT, "source", `logo.${ext}`))
+    .find((f) => existsSync(f));
+
+  if (logoFile) {
+    const ext = logoFile.split(".").pop();
+    const url = emit("logo", ext, readFileSync(logoFile));
+    html = replaceOnce(html, /\n  logo: "",/, () => `\n  logo: "${url}",`, "khoá logo");
+    console.log(`Logo             dùng ${logoFile.replace(ROOT + "/", "")}`);
+  }
 
   /* 5. Nhạc nền: cắt + nén, bỏ hẳn khỏi HTML. */
   let audio = null;

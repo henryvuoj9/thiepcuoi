@@ -3,3 +3,7 @@ node_modules/
 *.log
 .DS_Store
 DEPLOYED_AT
+
+# Thư mục thiết kế gốc: 80 MB ảnh nghiên cứu và bản dựng thử.
+# Phần có giá trị lâu dài đã chép sang docs/ và source/.
+wedding_invitation/

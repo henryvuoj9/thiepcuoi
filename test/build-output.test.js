@@ -99,7 +99,7 @@ test("mọi ảnh bên trong thiệp đều nằm trong danh sách phải tải 
   const manifest = JSON.parse(/window\.__ASSETS=(\{.*?\})<\/script>/s.exec(HTML)[1]);
   const urls = manifest.assets.map((a) => a.url).join(" ");
 
-  for (const name of ["lace-frame", "swan", "orchid", "photo", "plaster", "env-open"]) {
+  for (const name of ["lace-frame", "swan", "orchid", "photo", "plaster", "env-open", "logo"]) {
     assert.ok(urls.includes("/assets/" + name + "."), `thiếu ${name} — ảnh này sẽ nhảy vào sau khi mở thiệp`);
   }
   assert.ok(manifest.audio && manifest.audio.url, "nhạc phải tải xong trước khi mở");
