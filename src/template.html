@@ -44,7 +44,7 @@
   @font-face{font-family:"New Icon Script VN";font-style:normal;font-weight:400;font-display:swap;src:url(/assets/script.b7edc9a0.woff2) format("woff2");}
   :root{
     /* ===== THAM SỐ CHỈNH (panel ?tweak=1) ===== */
-    --c-txt-top:7%; --c-kicker:15px; --c-names:30px; --c-names-gap:0px; --c-cap:2; --c-stamp:150px; --c-tip:46%; --c-open-gap:84px; --c-open:16px; --c-guest-gap:170px; --c-guest-label:14px; --c-guest-name:30px;
+    --c-txt-top:7%; --c-kicker:15px; --c-names:30px; --c-names-gap:0px; --c-cap:2; --c-stamp:150px; --c-tip:46%; --c-open-gap:84px; --c-open:13px; --c-guest-gap:170px; --c-guest-label:17px; --c-guest-name:30px;
     --h-card-top:14%; --h-card-pad:21%; --h-card-sc:12px; --h-card-names:21px; --h-card-gap:12px; --h-oval-w:44%; --h-oval-left:-11%; --h-oval-top:-2%; --h-orchid-w:31%; --h-orchid-left:-8%; --h-orchid-bottom:-2%; --h-swan-w:34%; --h-swan-right:-3%; --h-swan-bottom:2%;
     --i-sc:13px; --i-announce:15px; --i-announce-gap:72px; --i-names:30px; --i-names-gap:44px; --i-venue:40px; --i-when:40px; --i-sec-pad:64px; --i-line:1.7; --t-icon:108px; --t-time:20px; --r-title:22px;
     --script:"New Icon Script VN","Pinyon Script",cursive;
@@ -62,6 +62,7 @@
     --lace-frame:url(/assets/lace-frame.ff58e793.webp);
     --swan:url(/assets/swan.b23a9d03.png);
     --orchid:url(/assets/orchid.657b295e.webp);
+    --paper:url(/assets/paper.d2b3a112.jpg);
     --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
   *{box-sizing:border-box}
@@ -69,7 +70,7 @@
   html,body{margin:0;padding:0;overflow-x:hidden;max-width:100vw}
   body{background:#2a1c14;color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.5;min-height:100vh;display:flex;justify-content:center;align-items:flex-start}
   body.locked{overflow:hidden;height:100vh;height:100dvh}
-  .sheet{width:100%;max-width:var(--col);min-height:100vh;position:relative;overflow-x:hidden;background:var(--ivory);color:var(--ink);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 50px 120px rgba(0,0,0,.7)}
+  .sheet{width:100%;max-width:var(--col);min-height:100vh;position:relative;overflow-x:hidden;background:var(--ivory) var(--paper) top center/100% auto repeat-y;color:var(--ink);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 50px 120px rgba(0,0,0,.7)}
   @media (min-width:560px){.sheet{margin:24px 0;min-height:calc(100vh - 48px)}}
 
   .sc{font-family:var(--sc);font-weight:500;font-size:var(--i-sc);letter-spacing:.2em;margin:0;color:var(--ink-2)}
@@ -156,15 +157,15 @@
 
   /* ===== sections ===== */
   .sec{padding:var(--i-sec-pad) 30px;text-align:center;position:relative;line-height:var(--i-line)}
-  .family{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin:0 auto;max-width:360px;position:relative}
+  .family{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin:0 auto;max-width:410px;position:relative}
   .family::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:1px;background:var(--line)}
   .fam{padding:0 6px}
   .fam .sc{margin-bottom:14px;font-size:14px}
-  .fam p{margin:0;font-size:21px;line-height:1.9;white-space:nowrap}
+  .fam p{margin:0;font-size:25px;line-height:1.75;white-space:nowrap}
   .fam p b{font-weight:700}
   .names-big{font-size:var(--i-names);margin-top:var(--i-names-gap)}
   .venue{font-size:var(--i-venue);margin-top:18px}
-  .addr{font-style:italic;font-weight:300;color:var(--ink-2);margin:12px 0 0;font-size:17px}
+  .addr{font-weight:600;color:var(--ink);margin:12px 0 0;font-size:18px}
   .when{margin-top:18px;line-height:1.2}
   .when .sc{display:block}
   .park{max-width:360px;margin:18px auto 0;text-align:left;font-size:16px;line-height:1.6;color:var(--ink-2);font-style:italic;font-weight:300}
@@ -227,7 +228,7 @@
   .footer .up{display:inline-block;margin-top:40px;font-family:var(--sc);font-size:13px;letter-spacing:.2em;color:var(--ivory);background:none;border:0;cursor:pointer;border-bottom:1px solid rgba(246,242,236,.6);padding:0 0 2px}
   /* ===== DESKTOP: dàn rộng, cover full màn ===== */
   @media (min-width:900px){
-    :root{ --c-txt-top:8%; --c-kicker:18px; --c-names:36px; --c-names-gap:0px; --c-cap:2; --c-stamp:190px; --c-tip:52%; --c-open-gap:108px; --c-open:16px; --c-guest-gap:230px; --c-guest-label:15px; --c-guest-name:36px;
+    :root{ --c-txt-top:8%; --c-kicker:18px; --c-names:36px; --c-names-gap:0px; --c-cap:2; --c-stamp:190px; --c-tip:52%; --c-open-gap:108px; --c-open:14px; --c-guest-gap:230px; --c-guest-label:18px; --c-guest-name:36px;
       --h-card-top:14%; --h-card-pad:21%; --h-card-sc:13px; --h-card-names:30px; --h-card-gap:14px; --h-oval-w:44%; --h-oval-left:-11%; --h-oval-top:-2%; --h-orchid-w:31%; --h-orchid-left:-8%; --h-orchid-bottom:-2%; --h-swan-w:34%; --h-swan-right:-3%; --h-swan-bottom:2%;
       --i-sc:14px; --i-announce:16px; --i-announce-gap:80px; --i-names:44px; --i-names-gap:48px; --i-venue:52px; --i-when:52px; --i-sec-pad:80px; --i-line:1.7; --t-icon:120px; --t-time:22px; --r-title:24px; }
     body{background:var(--ivory);display:block}
@@ -250,7 +251,7 @@
 <link rel="preload" as="image" href="/assets/env.7dee4b8c.jpg">
 <link rel="preload" as="image" href="/assets/stamp.cb68a7ba.webp">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/assets/script.b7edc9a0.woff2">
-<script>window.__ASSETS={"assets":[{"url":"/assets/plaster.8310121a.jpg","bytes":20563},{"url":"/assets/env.7dee4b8c.jpg","bytes":211206},{"url":"/assets/env-open.87cbbf75.webp","bytes":56210},{"url":"/assets/stamp.cb68a7ba.webp","bytes":62186},{"url":"/assets/lace-frame.ff58e793.webp","bytes":268318},{"url":"/assets/swan.b23a9d03.png","bytes":50859},{"url":"/assets/orchid.657b295e.webp","bytes":29736},{"url":"/assets/script.b7edc9a0.woff2","bytes":26872},{"url":"/assets/photo.6274e23e.jpg","bytes":78722},{"url":"/assets/logo.5f869a77.png","bytes":38639}],"audio":{"url":"/assets/bgm.7a90b768.m4a","bytes":632509}}</script>
+<script>window.__ASSETS={"assets":[{"url":"/assets/plaster.8310121a.jpg","bytes":20563},{"url":"/assets/paper.d2b3a112.jpg","bytes":69692},{"url":"/assets/env.7dee4b8c.jpg","bytes":211206},{"url":"/assets/env-open.87cbbf75.webp","bytes":56210},{"url":"/assets/stamp.cb68a7ba.webp","bytes":62186},{"url":"/assets/lace-frame.ff58e793.webp","bytes":268318},{"url":"/assets/swan.b23a9d03.png","bytes":50859},{"url":"/assets/orchid.657b295e.webp","bytes":29736},{"url":"/assets/script.b7edc9a0.woff2","bytes":26872},{"url":"/assets/photo.6274e23e.jpg","bytes":78722},{"url":"/assets/logo.5f869a77.png","bytes":38639}],"audio":{"url":"/assets/bgm.7a90b768.m4a","bytes":632509}}</script>
 <script>/**
  * Bộ nạp tài nguyên của màn bìa.
  *
@@ -405,7 +406,7 @@
   <div class="stamp" id="stamp"></div>
   <svg class="ring" id="loadRing" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="48"/><circle class="bar" cx="50" cy="50" r="48"/></svg>
   <div class="guest" id="guestBlock"><p class="sc" id="guestLabel">Trân trọng kính mời</p><p class="name fit" id="guestName">{Tên khách}</p></div>
-  <p class="sc open" aria-hidden="true"><i>&#8964;</i></p>
+  <p class="sc open">Mở thư và bật nhạc<i>&#8964;</i></p>
 </div>
 <div class="flash" id="flash"></div>
 <audio id="bgm" loop preload="none"></audio>
@@ -444,8 +445,8 @@
     <p class="addr rv d2" id="address"></p>
     <div class="map rv d2"><iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Bản đồ địa điểm"></iframe></div>
     <div class="park rv d2" id="park"></div>
-    <p class="sc rv d3" style="margin-top:40px" id="whenTitle">Vào lúc</p>
-    <div class="when rv d3"><span class="script" id="whenDay" style="display:block;font-size:var(--i-venue);line-height:1.15"></span><span class="script" id="whenTime" style="display:block;font-size:calc(var(--i-venue) * .8);margin-top:8px"></span></div>
+    <p class="sc b rv d3" style="margin-top:40px" id="whenTitle">Vào lúc</p>
+    <div class="when rv d3"><span class="script" id="whenDay" style="display:block;font-size:calc(var(--i-venue) * .75);line-height:1.15"></span><span class="script" id="whenDate" style="display:block;font-size:calc(var(--i-venue) * .75);line-height:1.15;margin-top:2px"></span><span class="script" id="whenTime" style="display:block;font-size:calc(var(--i-venue) * .8);margin-top:8px"></span></div>
     <p class="rv d3" style="margin:10px 0 0"><a class="link" id="calBtn" href="#" target="_blank" rel="noopener">Thêm vào lịch</a></p>
     <div class="count rv d3">
       <div class="cd"><b id="cdD">0</b><span>Ngày</span></div>
@@ -454,7 +455,7 @@
       <div class="cd"><b id="cdS">00</b><span>Giây</span></div>
     </div>
     <p class="rv d3" style="margin:40px 0 0"><a class="pill" href="#rsvp" id="toRsvp">Xác nhận tham dự</a></p>
-    <p class="copy fit rv d3" style="margin-top:34px;font-size:17px;max-width:none" id="closing"></p>
+    <p class="copy rv d3" style="margin-top:34px;font-size:19px;font-weight:600;font-style:normal;max-width:360px;text-wrap:balance" id="closing"></p>
   </section>
 
   <section class="agenda" id="agenda">
@@ -482,7 +483,7 @@
     <div class="mono rv" id="mono"><span id="monoInitials">VL</span></div>
     <p class="contact rv d1" id="footerContact"></p>
     <p class="script names rv d2" id="footerNames"></p>
-    <p class="copy fit rv d2" id="footerClosing" style="color:rgba(246,242,236,.92);margin-top:30px;font-size:17px;max-width:none"></p>
+    <p class="copy rv d2" id="footerClosing" style="color:rgba(246,242,236,.92);margin-top:30px;font-size:19px;font-weight:600;font-style:normal;max-width:360px;text-wrap:balance"></p>
     <button class="up rv d3" id="toTop" type="button">Về đầu thư</button>
   </footer>
 
@@ -508,7 +509,7 @@ window.DATA = {
   ],
   mapQuery: "Pan Pacific Hanoi, 1 Thanh Niên, Ba Đình, Hà Nội",
   weddingDate: "2026-11-16T17:45:00+07:00",
-  whenTitle: "Vào lúc", whenDay: "Thứ hai, 16 tháng 11 năm 2026", whenTime: "17:45",
+  whenTitle: "Vào lúc", whenDay: "Thứ Hai", whenDate: "16 tháng 11 năm 2026", whenTime: "17:45",
   closingGeneric: "Rất mong được đón tiếp quý khách trong ngày vui của gia đình chúng tôi.",
   closing: "Rất mong được tiếp đón {x} {g} trong ngày vui của gia đình chúng tôi.",
   timeline: [
@@ -546,12 +547,14 @@ const ICONS = {
   const names = g => `<span class="nm fit ${g}">${styl(D.groom)}</span><span class="amp">&amp;</span><span class="nm fit ${g}">${styl(D.bride)}</span>`;
   $("coverNames").innerHTML = `<span class="w w1" style="display:block">${names("gA").split('<span class="amp">')[0]}</span><span class="w w2 amp">&amp;</span><span class="w w3" style="display:block"><span class="nm fit gA">${styl(D.bride)}</span></span>`;
   $("cardNames").innerHTML = names("gB"); $("infoNames").innerHTML = names("gC"); $("footerNames").innerHTML = names("gD");
-  $("guestLabel").textContent = D.guestLabel; $("guestName").textContent = D.guest;
+  $("guestLabel").textContent = D.guestLabel;
+  const honCap = D.honorific ? D.honorific.charAt(0).toUpperCase() + D.honorific.slice(1) : "";
+  $("guestName").textContent = (honCap ? honCap + " " : "") + D.guest;
   $("envInitials").innerHTML = D.initials.split("").join(" &amp; "); $("monoInitials").textContent = D.initials;
   const par = a => `${a[0]} <b>${a[1]}</b><br>${a[2]} <b>${a[3]}</b>`;
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
   $("announce").textContent = D.announce; $("venue").textContent = D.venue; $("address").textContent = D.address;
-  $("whenTitle").textContent = D.whenTitle; $("whenDay").textContent = D.whenDay; $("whenTime").textContent = D.whenTime; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
+  $("whenTitle").textContent = D.whenTitle; $("whenDay").textContent = D.whenDay; $("whenDate").textContent = D.whenDate; $("whenTime").textContent = D.whenTime; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
   $("heroImg").setAttribute("href", D.photo); $("cardDate").textContent = D.dateShort;
   $("park").innerHTML = D.parking.map(([t, d]) => `<p><b>${t}</b>${d}</p>`).join(""); $("map").src = `https://www.google.com/maps?q=${encodeURIComponent(D.mapQuery)}&z=16&output=embed`;
   $("rsvpNote").innerHTML = `Vui lòng xác nhận <b style="font-weight:700;font-style:normal">trước ngày ${D.rsvpDeadline}</b> để gia đình chuẩn bị chu đáo nhất.`;

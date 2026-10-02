@@ -22,6 +22,7 @@ const OUT_ASSETS = join(ROOT, "public", "assets");
 /* Biến CSS giữ lại -> tên tệp. Thứ tự không quan trọng. */
 const KEEP = {
   "--plaster": "plaster",
+  "--paper": "paper",
   "--env-v2": "env",
   "--env-open": "env-open",
   "--stamp": "stamp",
@@ -295,14 +296,6 @@ function build() {
         $("rsvpForm").classList.add("hide"); $("thanks").classList.add("show"); })
       .catch(() => { btn.disabled = false; btn.textContent = label === "Gửi lại" ? label : "Gửi lại"; }); });`,
     "trình xử lý gửi xác nhận"
-  );
-
-  /* 14. Bỏ dòng chữ "Mở thư và phát nhạc", giữ lại mũi chỉ xuống làm dấu chạm. */
-  html = replaceOnce(
-    html,
-    /<p class="sc open">[^<]*<i>&#8964;<\/i><\/p>/,
-    () => `<p class="sc open" aria-hidden="true"><i>&#8964;</i></p>`,
-    "dòng nhắc trên bìa"
   );
 
   /* 15. Khoá cánh cửa: chưa tải xong thì chạm cũng không mở, và không phát nhạc.

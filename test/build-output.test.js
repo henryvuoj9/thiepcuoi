@@ -67,8 +67,18 @@ test("chỗ máy chủ chèn tên khách vẫn còn", () => {
 
 /* ---------- hành vi màn bìa ---------- */
 
-test("đã bỏ dòng chữ mời mở thư", () => {
-  assert.ok(!HTML.includes("Mở thư và phát nhạc"));
+test("dòng mời mở thư vẫn còn, nhưng chỉ hiện sau khi tải xong", () => {
+  /* Từng bỏ hẳn, rồi chủ thiệp muốn giữ lại — nhưng vẫn phải gắn với .ready,
+     vì mời chạm trong lúc bìa chưa mở được thì chỉ gây bực. */
+  assert.ok(HTML.includes("Mở thư và bật nhạc"), "chủ thiệp muốn giữ dòng này");
+});
+
+test("nền giấy được tách ra tệp riêng, không nhúng base64", () => {
+  assert.match(HTML, /--paper:url\(\/assets\/paper\.[a-z0-9]+\.jpg\)/);
+});
+
+test("xưng hô hiện trước tên khách trên bìa", () => {
+  assert.match(HTML, /honCap \? honCap \+ " " : ""/);
 });
 
 test("chưa tải xong thì chạm cũng không mở được thiệp", () => {
@@ -99,7 +109,7 @@ test("mọi ảnh bên trong thiệp đều nằm trong danh sách phải tải 
   const manifest = JSON.parse(/window\.__ASSETS=(\{.*?\})<\/script>/s.exec(HTML)[1]);
   const urls = manifest.assets.map((a) => a.url).join(" ");
 
-  for (const name of ["lace-frame", "swan", "orchid", "photo", "plaster", "env-open", "logo"]) {
+  for (const name of ["lace-frame", "swan", "orchid", "photo", "plaster", "env-open", "logo", "paper"]) {
     assert.ok(urls.includes("/assets/" + name + "."), `thiếu ${name} — ảnh này sẽ nhảy vào sau khi mở thiệp`);
   }
   assert.ok(manifest.audio && manifest.audio.url, "nhạc phải tải xong trước khi mở");
