@@ -128,8 +128,26 @@ curl -s -o /dev/null https://vulinh.site/healthz
 git push
 ```
 
-Rồi cPanel → *Git Version Control* → **Manage** → *Update from Remote* →
-*Deploy HEAD Commit*. Không cần chạy lại NPM Install trừ khi `package.json` đổi.
+Rồi cPanel → *Git Version Control* → **Manage**:
+
+1. **Update from Remote** — kéo code mới từ GitHub về máy chủ
+2. Kiểm tra dòng **HEAD Commit** đã đổi sang commit mới nhất
+3. **Deploy HEAD Commit** — chép code vào chỗ chạy
+4. Setup Node.js App → **Restart**
+
+> **Hai nút này làm hai việc khác hẳn nhau.** `Deploy HEAD Commit` chỉ triển
+> khai cái HEAD *đang có* trên máy chủ. Quên bước 1 thì bấm deploy bao nhiêu
+> lần cũng vẫn ra bản cũ, không có lỗi nào báo. Luôn đọc dòng HEAD Commit để
+> xác nhận.
+>
+> Máy chủ chạy **LiteSpeed**, không đọc tín hiệu `tmp/restart.txt` của
+> Passenger — phải bấm Restart bằng tay.
+
+Không cần chạy lại NPM Install trừ khi `package.json` đổi.
+
+Muốn biết chắc bản nào đang chạy: mở `/admin/diag?k=<8 ký tự đầu của
+SESSION_SECRET>`. Trang này in phiên bản, thời điểm deploy, hình dạng từng
+biến môi trường và trạng thái kết nối CSDL — không in giá trị nào.
 
 ---
 
@@ -191,6 +209,9 @@ và nhờ vậy deploy chỉ còn là chép tệp.
 - **"Lần sau khỏi tải" phụ thuộc HTTP cache của trình duyệt.** Safari trên iPhone
   dọn cache sau khoảng 7 ngày không ghé thăm, khi đó khách tải lại. Không hỏng,
   chỉ chậm như lần đầu.
+- **Biến môi trường không được chứa ký tự `$`.** cPanel cho giá trị đi qua một
+  lớp shell, nên `$abc` bị nuốt thành chuỗi rỗng. Vì vậy chuỗi băm mật khẩu
+  ngăn bằng dấu chấm. Có kiểm thử chặn không cho `$` quay lại.
 - **Nhạc dùng HE-AAC 48 kbps.** Trình duyệt rất cũ có thể giải mã thiếu lớp SBR
   và nghe hơi đục. Bản AAC-LC 64 kbps đã dựng sẵn ở `public/assets/bgm-lc.*.m4a`;
   muốn đổi thì hoán vị hai phần tử trong `AUDIO.variants` của `tools/build.mjs`
