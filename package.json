@@ -1,0 +1,22 @@
+{
+  "name": "thiepcuoi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Thiệp cưới Hải Vũ & Phương Linh — máy chủ thiệp theo slug + CRM quản lý khách",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node tools/build.mjs",
+    "start": "node app.js",
+    "dev": "node --watch app.js",
+    "test": "node --test test/*.test.js",
+    "hash-password": "node tools/hash-password.js",
+    "preview": "node tools/preview.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "mysql2": "^3.11.5"
+  }
+}

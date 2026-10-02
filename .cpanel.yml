@@ -1,0 +1,19 @@
+---
+deployment:
+  tasks:
+    # cPanel chạy các lệnh này sau khi kéo code về ~/repositories/thiepcuoi
+    - export APP=$HOME/thiepcuoi
+    - export WEB=$HOME/public_html
+
+    - /bin/mkdir -p $APP/src $APP/tmp $WEB/assets
+
+    # Mã nguồn máy chủ -> thư mục ứng dụng Node
+    - /bin/cp -R src/. $APP/src/
+    - /bin/cp app.js package.json $APP/
+
+    # Tài nguyên tĩnh -> thư mục web, Apache phục vụ trực tiếp
+    - /bin/cp -R public/assets/. $WEB/assets/
+    - /bin/cp public/assets-htaccess $WEB/assets/.htaccess
+
+    # Bảo Passenger nạp lại mã mới
+    - /bin/touch $APP/tmp/restart.txt
