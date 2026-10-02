@@ -1,19 +1,22 @@
 ---
 deployment:
   tasks:
-    # cPanel chạy các lệnh này sau khi kéo code về ~/repositories/thiepcuoi
-    - export APP=$HOME/thiepcuoi
-    - export WEB=$HOME/public_html
-
-    - /bin/mkdir -p $APP/src $APP/tmp $WEB/assets
+    # Không dùng `export`: cPanel có thể chạy mỗi dòng trong một shell riêng,
+    # khi đó biến đặt ở dòng trước là rỗng ở dòng sau và lệnh chép đi sai chỗ
+    # mà không báo lỗi gì. Viết thẳng $HOME ở mọi dòng cho chắc.
+    - /bin/mkdir -p $HOME/thiepcuoi/src $HOME/thiepcuoi/tmp $HOME/public_html/assets
 
     # Mã nguồn máy chủ -> thư mục ứng dụng Node
-    - /bin/cp -R src/. $APP/src/
-    - /bin/cp app.js package.json $APP/
+    - /bin/cp -R src/. $HOME/thiepcuoi/src/
+    - /bin/cp app.js package.json $HOME/thiepcuoi/
 
-    # Tài nguyên tĩnh -> thư mục web, Apache phục vụ trực tiếp
-    - /bin/cp -R public/assets/. $WEB/assets/
-    - /bin/cp public/assets-htaccess $WEB/assets/.htaccess
+    # Tài nguyên tĩnh -> thư mục web, Apache/LiteSpeed phục vụ trực tiếp
+    - /bin/cp -R public/assets/. $HOME/public_html/assets/
+    - /bin/cp public/assets-htaccess $HOME/public_html/assets/.htaccess
 
-    # Bảo Passenger nạp lại mã mới
-    - /bin/touch $APP/tmp/restart.txt
+    # Dấu vết để biết bản deploy nào đã tới (đọc tại /admin/diag)
+    - /bin/date +%Y-%m-%dT%H:%M:%S > $HOME/thiepcuoi/DEPLOYED_AT
+
+    # Passenger đọc tệp này để nạp lại. LiteSpeed thì không — vẫn phải bấm
+    # Restart trong Setup Node.js App.
+    - /bin/touch $HOME/thiepcuoi/tmp/restart.txt

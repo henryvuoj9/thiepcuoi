@@ -69,6 +69,18 @@ function back(res, path, ok, text) {
    mà không lộ gì cho người lạ.
    Mở khoá bằng 8 ký tự đầu của SESSION_SECRET để người ngoài không dò được. */
 
+/** Dấu thời gian do .cpanel.yml ghi ra — cách chắc chắn nhất để biết bản
+    deploy nào đang thực sự chạy, thay vì suy đoán qua hành vi. */
+function deployedAt() {
+  try {
+    return require("node:fs")
+      .readFileSync(require("node:path").join(__dirname, "..", "..", "DEPLOYED_AT"), "utf8")
+      .trim();
+  } catch {
+    return "(không có tệp DEPLOYED_AT — bản này deploy trước khi thêm dấu vết)";
+  }
+}
+
 router.get("/diag", async (req, res) => {
   let secret;
   try {
@@ -92,6 +104,7 @@ router.get("/diag", async (req, res) => {
     "CHẨN ĐOÁN CẤU HÌNH",
     "",
     `Phiên bản mã nguồn: ${require("../../package.json").version}`,
+    `Deploy lúc: ${deployedAt()}`,
     "",
     shape("SITE_URL"),
     shape("ADMIN_USER"),
