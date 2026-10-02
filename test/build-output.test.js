@@ -114,3 +114,27 @@ test("mọi ảnh bên trong thiệp đều nằm trong danh sách phải tải 
   }
   assert.ok(manifest.audio && manifest.audio.url, "nhạc phải tải xong trước khi mở");
 });
+
+test("chữ trên bìa chờ font thật rồi mới hiện", () => {
+  /* Không có cái này thì tên cô dâu chú rể được vẽ bằng font dự phòng trước,
+     rồi nhảy sang font chữ ký — nhìn như trục trặc. */
+  assert.match(HTML, /\.cover \.txt \.sc,\.cover \.txt \.w,\.cover \.guest\{animation-play-state:paused\}/);
+  assert.match(HTML, /html\.fonts-ready .*animation-play-state:running/);
+  assert.match(HTML, /document\.fonts\.load\('400 40px "New Icon Script VN"'/);
+});
+
+test("chỉ chờ ba nét chữ của bìa, không chờ toàn bộ font", () => {
+  /* document.fonts.ready chờ cả 26 tệp Cormorant của phần ruột — khách sẽ
+     nhìn phong bì trống quá lâu. */
+  /* document.fonts.ready vẫn được dùng hợp lệ ở chỗ khác — bản gốc dùng nó để
+     căn lại cỡ chữ sau khi font tải xong. Chỉ cấm dùng nó để mở khoá chữ bìa. */
+  assert.ok(!/document\.fonts\.ready[\s\S]{0,40}revealCoverText/.test(HTML), "đang chờ toàn bộ font mới hiện chữ bìa");
+  assert.match(HTML, /document\.fonts\.ready\.then\(\(\) => \{ fit\(\)/, "mất đoạn căn lại cỡ chữ của bản gốc");
+  assert.match(HTML, /setTimeout\(revealCoverText, 3000\)/, "thiếu lưới an toàn");
+});
+
+test("chế độ giảm chuyển động vẫn thấy chữ trên bìa", () => {
+  /* Lỗi sẵn có: media query tắt animation bằng !important, các phần tử này
+     kẹt ở opacity:0 nên toàn bộ chữ trên bìa vô hình. */
+  assert.match(HTML, /@media \(prefers-reduced-motion:reduce\)\{\.cover[^}]*opacity:1!important\}/);
+});

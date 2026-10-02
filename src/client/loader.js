@@ -20,6 +20,30 @@
      hơn khách đứng trước cánh cửa khoá vĩnh viễn. */
   var MAX_WAIT_MS = 15000;
 
+  /* Chống nháy font trên bìa.
+     Trình duyệt vẽ chữ ngay bằng font dự phòng rồi mới đổi sang font thật khi
+     tải xong — với dòng tên cô dâu chú rể viết bằng font chữ ký thì cú đổi đó
+     lộ rõ như trục trặc. Nên giữ chữ ở trạng thái chưa hiện cho tới khi font
+     sẵn sàng; bìa vốn đã có màn chờ nên không ai thấy mình phải đợi. */
+  var root = document.documentElement;
+  function revealCoverText() { root.classList.add("fonts-ready"); }
+
+  if (document.fonts && document.fonts.load) {
+    /* Chỉ đợi đúng ba nét chữ mà bìa dùng, không đợi document.fonts.ready —
+       cái đó đợi cả 26 tệp Cormorant của phần ruột thiệp, khách sẽ phải nhìn
+       phong bì trống quá lâu. Chuỗi mẫu có đủ chữ Việt để kéo cả hai bộ ký tự
+       latin và vietnamese về. */
+    var probe = "Hải Vũ Phương Linh Trân trọng kính mời";
+    Promise.all([
+      document.fonts.load('400 40px "New Icon Script VN"', probe),
+      document.fonts.load('500 17px "Cormorant SC"', probe),
+      document.fonts.load('700 30px "Cormorant SC"', probe),
+    ]).then(revealCoverText, revealCoverText);
+    setTimeout(revealCoverText, 3000); // lưới an toàn: font hỏng cũng phải hiện chữ
+  } else {
+    revealCoverText();
+  }
+
   window.__onAssetsReady = function (cb) { settled ? cb() : waiting.push(cb); };
   window.__assetsReady = function () { return settled; };
 

@@ -39,6 +39,9 @@
   .ring .bar{stroke:rgba(246,242,236,.75);transition:stroke-dashoffset .3s linear}
   .cover .open{animation:none;opacity:0}
   .cover.ready .open{animation:up .8s var(--ease) forwards,hint 3s ease-in-out .9s infinite}
+  .cover .txt .sc,.cover .txt .w,.cover .guest{animation-play-state:paused}
+  html.fonts-ready .cover .txt .sc,html.fonts-ready .cover .txt .w,html.fonts-ready .cover .guest{animation-play-state:running}
+  @media (prefers-reduced-motion:reduce){.cover .txt .sc,.cover .txt .w,.cover .guest,.cover .open{opacity:1!important}}
 </style>
 <style>
   @font-face{font-family:"New Icon Script VN";font-style:normal;font-weight:400;font-display:swap;src:url(/assets/script.b7edc9a0.woff2) format("woff2");}
@@ -273,6 +276,30 @@
   /* Mạng hỏng giữa chừng thì vẫn phải mở được thiệp — thà thiếu một ảnh còn
      hơn khách đứng trước cánh cửa khoá vĩnh viễn. */
   var MAX_WAIT_MS = 15000;
+
+  /* Chống nháy font trên bìa.
+     Trình duyệt vẽ chữ ngay bằng font dự phòng rồi mới đổi sang font thật khi
+     tải xong — với dòng tên cô dâu chú rể viết bằng font chữ ký thì cú đổi đó
+     lộ rõ như trục trặc. Nên giữ chữ ở trạng thái chưa hiện cho tới khi font
+     sẵn sàng; bìa vốn đã có màn chờ nên không ai thấy mình phải đợi. */
+  var root = document.documentElement;
+  function revealCoverText() { root.classList.add("fonts-ready"); }
+
+  if (document.fonts && document.fonts.load) {
+    /* Chỉ đợi đúng ba nét chữ mà bìa dùng, không đợi document.fonts.ready —
+       cái đó đợi cả 26 tệp Cormorant của phần ruột thiệp, khách sẽ phải nhìn
+       phong bì trống quá lâu. Chuỗi mẫu có đủ chữ Việt để kéo cả hai bộ ký tự
+       latin và vietnamese về. */
+    var probe = "Hải Vũ Phương Linh Trân trọng kính mời";
+    Promise.all([
+      document.fonts.load('400 40px "New Icon Script VN"', probe),
+      document.fonts.load('500 17px "Cormorant SC"', probe),
+      document.fonts.load('700 30px "Cormorant SC"', probe),
+    ]).then(revealCoverText, revealCoverText);
+    setTimeout(revealCoverText, 3000); // lưới an toàn: font hỏng cũng phải hiện chữ
+  } else {
+    revealCoverText();
+  }
 
   window.__onAssetsReady = function (cb) { settled ? cb() : waiting.push(cb); };
   window.__assetsReady = function () { return settled; };

@@ -205,7 +205,14 @@ function build() {
       `  .ring .bar{stroke:rgba(246,242,236,.75);transition:stroke-dashoffset .3s linear}\n` +
       // Chưa tải xong thì không mời gọi chạm: bìa chưa mở được, mời gọi chỉ gây bực.
       `  .cover .open{animation:none;opacity:0}\n` +
-      `  .cover.ready .open{animation:up .8s var(--ease) forwards,hint 3s ease-in-out .9s infinite}\n</style>`,
+      `  .cover.ready .open{animation:up .8s var(--ease) forwards,hint 3s ease-in-out .9s infinite}\n` +
+      // Giữ chữ trên bìa ở vạch xuất phát cho tới khi font thật sẵn sàng, để
+      // khách không thấy tên mình bị vẽ bằng font dự phòng rồi nhảy sang font khác.
+      `  .cover .txt .sc,.cover .txt .w,.cover .guest{animation-play-state:paused}\n` +
+      `  html.fonts-ready .cover .txt .sc,html.fonts-ready .cover .txt .w,html.fonts-ready .cover .guest{animation-play-state:running}\n` +
+      // Lỗi sẵn có: với chế độ giảm chuyển động, animation bị tắt bằng !important
+      // nên các phần tử này kẹt ở opacity:0 — toàn bộ chữ trên bìa vô hình.
+      `  @media (prefers-reduced-motion:reduce){.cover .txt .sc,.cover .txt .w,.cover .guest,.cover .open{opacity:1!important}}\n</style>`,
     "thẻ đóng style"
   );
 
