@@ -21,8 +21,25 @@ test("mỗi lần băm cho muối khác nhau", () => {
   assert.ok(auth.verifyPassword("cung-mot-mat-khau", b));
 });
 
+test("chuỗi băm không chứa ký tự $ — nó phải sống được trong biến môi trường", () => {
+  const stored = auth.hashPassword("mat-khau-rat-dai-123");
+  assert.ok(!stored.includes("$"), "ký tự $ bị shell nuốt khi cPanel lưu biến môi trường");
+  assert.match(stored, /^scrypt\.[0-9a-f]{32}\.[0-9a-f]{64}$/);
+});
+
+test("vẫn đọc được chuỗi băm định dạng $ cũ", () => {
+  const legacy = auth.hashPassword("cu-phap-cu").replace(/\./g, "$");
+  assert.ok(auth.verifyPassword("cu-phap-cu", legacy));
+  assert.ok(!auth.verifyPassword("sai", legacy));
+});
+
+test("chuỗi băm bị shell nuốt mất phần sau thì từ chối, không cho qua", () => {
+  assert.equal(auth.verifyPassword("bat-ky-gi", "scrypt"), false);
+  assert.equal(auth.verifyPassword("", "scrypt"), false);
+});
+
 test("chuỗi băm hỏng thì từ chối, không ném lỗi", () => {
-  for (const bad of ["", "rác", "scrypt$xx", "scrypt$ab$cd", "bcrypt$a$b"]) {
+  for (const bad of ["", "rác", "scrypt.xx", "scrypt.ab.cd", "bcrypt.a.b", "scrypt"]) {
     assert.equal(auth.verifyPassword("gì đó", bad), false, `phải từ chối: ${bad}`);
   }
 });

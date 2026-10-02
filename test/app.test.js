@@ -142,6 +142,20 @@ test("sai mật khẩu thì không vào được", async () => {
   assert.equal((await client("/admin")).status, 302, "vẫn phải bị chặn");
 });
 
+test("chuỗi băm bị cắt cụt thì nói là lỗi cấu hình, không nói sai mật khẩu", async () => {
+  const good = process.env.ADMIN_PASSWORD_HASH;
+  process.env.ADMIN_PASSWORD_HASH = "scrypt"; // đúng thứ shell để lại sau khi nuốt $...
+
+  const res = await makeClient(app.base)("/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ user: "admin", password: app.password }).toString(),
+  });
+
+  process.env.ADMIN_PASSWORD_HASH = good;
+  assert.match(decodeURIComponent(res.headers.get("location")), /ADMIN_PASSWORD_HASH/);
+});
+
 test("đúng mật khẩu thì vào được danh sách khách", async () => {
   const res = await admin("/admin/login", {
     method: "POST",

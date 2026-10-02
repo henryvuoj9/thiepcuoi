@@ -89,6 +89,14 @@ router.post("/login", (req, res) => {
     return back(res, "/admin/login", false, "Thử sai quá nhiều lần. Đợi 15 phút rồi thử lại.");
   }
 
+  /* Cấu hình hỏng và mật khẩu sai nhìn giống hệt nhau từ phía người dùng.
+     Tách ra, nếu không một chuỗi băm bị shell cắt cụt sẽ giả dạng "sai mật
+     khẩu" và người dựng trang gõ lại mật khẩu đúng hàng chục lần. */
+  if (!auth.looksLikeHash(config.adminPasswordHash)) {
+    return back(res, "/admin/login", false,
+      "Cấu hình ADMIN_PASSWORD_HASH không hợp lệ — có thể đã bị cắt cụt khi lưu. Tạo lại bằng: npm run hash-password");
+  }
+
   const okUser = String(req.body.user || "") === config.adminUser;
   const okPass = auth.verifyPassword(String(req.body.password || ""), config.adminPasswordHash);
 

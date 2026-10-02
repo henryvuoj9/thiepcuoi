@@ -7,15 +7,30 @@ const SESSION_HOURS = 12;
 
 /* ---------- mật khẩu ---------- */
 
-/** Băm mật khẩu thành chuỗi "scrypt$<salt hex>$<hash hex>" để dán vào .env */
+/**
+ * Băm mật khẩu thành "scrypt.<muối hex>.<băm hex>".
+ *
+ * Dấu phân cách là dấu chấm chứ không phải "$": chuỗi này sống trong biến môi
+ * trường, mà nhiều lớp cấu hình (cPanel, docker-compose, systemd) cho giá trị
+ * đi qua shell — ở đó "$abc" bị nuốt thành chuỗi rỗng và chuỗi băm hỏng âm
+ * thầm, biểu hiện ra ngoài là "mật khẩu đúng vẫn báo sai".
+ */
 function hashPassword(password) {
   const salt = randomBytes(16);
   const hash = scryptSync(password, salt, SCRYPT.keylen, SCRYPT);
-  return `scrypt$${salt.toString("hex")}$${hash.toString("hex")}`;
+  return `scrypt.${salt.toString("hex")}.${hash.toString("hex")}`;
+}
+
+/** Chuỗi băm có đúng hình dạng không — để phân biệt "sai mật khẩu" với
+    "cấu hình hỏng", hai thứ nhìn giống hệt nhau từ phía người đăng nhập. */
+function looksLikeHash(stored) {
+  return /^scrypt[.$][0-9a-f]{32}[.$][0-9a-f]{64}$/.test(String(stored || ""));
 }
 
 function verifyPassword(password, stored) {
-  const parts = String(stored || "").split("$");
+  // Vẫn chấp nhận định dạng "$" cũ để bản đã cài không chết khi nâng cấp.
+  const raw = String(stored || "");
+  const parts = raw.includes(".") ? raw.split(".") : raw.split("$");
   if (parts.length !== 3 || parts[0] !== "scrypt") return false;
 
   let expected;
@@ -80,7 +95,7 @@ function csrfValid(given, sessionToken, secret) {
 }
 
 module.exports = {
-  hashPassword, verifyPassword,
+  hashPassword, verifyPassword, looksLikeHash,
   issueSession, readSession,
   csrfToken, csrfValid,
   SESSION_HOURS,
