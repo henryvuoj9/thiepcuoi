@@ -63,6 +63,49 @@ function trimAndFade(wav, endSec, fadeSec) {
 }
 
 /**
+ * Xoá mốc thời gian tạo/sửa trong tệp MP4.
+ *
+ * afconvert ghi giờ hệ thống vào các atom mvhd/tkhd/mdhd, nên hai lần mã hoá
+ * cùng một nguồn lại cho ra byte khác nhau. Mà tên tệp của ta lấy từ mã băm nội
+ * dung, nên build lại sẽ đổi tên tệp, phá cache trình duyệt và nhồi thêm vài
+ * trăm KB vào Git mỗi lần — dù nhạc không hề đổi. Cào phẳng chúng về 0.
+ */
+function stripMp4Timestamps(buf) {
+  const CONTAINERS = new Set(["moov", "trak", "mdia"]);
+  const STAMPED = new Set(["mvhd", "tkhd", "mdhd"]);
+
+  const walk = (start, end) => {
+    let p = start;
+    while (p + 8 <= end) {
+      let size = buf.readUInt32BE(p);
+      const type = buf.toString("latin1", p + 4, p + 8);
+      let header = 8;
+
+      if (size === 1) {
+        size = Number(buf.readBigUInt64BE(p + 8));
+        header = 16;
+      } else if (size === 0) {
+        size = end - p;
+      }
+      if (size < header || p + size > end) break;
+
+      const body = p + header;
+      if (CONTAINERS.has(type)) {
+        walk(body, p + size);
+      } else if (STAMPED.has(type)) {
+        // phiên bản(1) + cờ(3), rồi hai mốc thời gian 4 byte (hoặc 8 nếu version 1)
+        const width = buf[body] === 1 ? 8 : 4;
+        buf.fill(0, body + 4, body + 4 + width * 2);
+      }
+      p += size;
+    }
+  };
+
+  walk(0, buf.length);
+  return buf;
+}
+
+/**
  * @param {Buffer} mp3      dữ liệu MP3 gốc
  * @param {object} opts     { endSec, fadeSec, variants: [{name, codec, bitrate}] }
  * @returns {Map<string, Buffer>} tên biến thể -> dữ liệu .m4a
@@ -82,7 +125,7 @@ export function encodeVariants(mp3, { endSec, fadeSec, variants }) {
     for (const v of variants) {
       const out = join(dir, `${v.name}.m4a`);
       execFileSync("afconvert", [cutWav, "-f", "m4af", "-d", v.codec, "-b", String(v.bitrate), "-q", "127", "-s", "2", out]);
-      result.set(v.name, readFileSync(out));
+      result.set(v.name, stripMp4Timestamps(readFileSync(out)));
     }
     return result;
   } finally {
