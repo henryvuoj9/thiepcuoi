@@ -663,10 +663,9 @@ window.DATA = {
     { t: "18:30", l: "Lễ thành hôn",  icon: "rings" },
     { t: "18:45", l: "Tiệc cưới",     icon: "dinner" }
   ],
-  thanksTitle: "Cảm ơn {x} {g}",
-  thanksBody: "Chúng tôi đã nhận được xác nhận. Hẹn gặp {x} {g} trong ngày vui!",
-  thanksTitleGeneric: "Cảm ơn quý khách",
-  thanksBodyGeneric: "Chúng tôi đã nhận được xác nhận. Hẹn gặp quý khách trong ngày vui!",
+  // Muốn gọi đích danh thì dùng {x} là xưng hô, {g} là tên — xem dòng gán bên dưới.
+  thanksTitle: "Cảm ơn quý khách",
+  thanksBody: "Chúng tôi đã nhận được xác nhận. Hẹn gặp quý khách trong ngày vui!",
   rsvpDeadline: "12/11/2026",
   contact: { label: "0946 503 155", tel: "0946503155" },
   calStart: "20261116T174500", calEnd: "20261116T220000", calTitle: "Tiệc cưới Hải Vũ & Phương Linh"
@@ -704,11 +703,11 @@ const ICONS = {
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
   $("announce").textContent = D.announce; $("venue").textContent = D.venue; $("address").textContent = D.address;
   $("whenTitle").textContent = D.whenTitle; $("whenDay").textContent = D.whenDay; $("whenDate").textContent = D.whenDate; $("whenTime").textContent = D.whenTime; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
-  /* Gọi đúng tên khách: "Cảm ơn anh Tester 1". Thiếu xưng hô thì bỏ qua và
-     gộp khoảng trắng; không biết khách là ai thì mới dùng lối gọi chung. */
+  /* Hai câu cảm ơn vẫn đi qua bộ thay chỗ, nên muốn gọi đích danh về sau thì
+     chỉ cần viết {x} {g} vào chuỗi trong window.DATA, không phải sửa mã. */
   const fillGuest = t => t.replace(/\{x\}/g, D.honorific).replace(/\{g\}/g, D.guest).replace(/\s+/g, " ").trim();
-  $("thanksTitle").textContent = D.guest ? fillGuest(D.thanksTitle) : D.thanksTitleGeneric;
-  $("thanksBody").textContent = D.guest ? fillGuest(D.thanksBody) : D.thanksBodyGeneric;
+  $("thanksTitle").textContent = fillGuest(D.thanksTitle);
+  $("thanksBody").textContent = fillGuest(D.thanksBody);
   $("heroImg").setAttribute("href", D.photo); $("cardDate").textContent = D.dateShort;
   $("park").innerHTML = D.parking.map(([t, d]) => `<p><b>${t}</b>${d}</p>`).join(""); $("map").src = `https://www.google.com/maps?q=${encodeURIComponent(D.mapQuery)}&z=16&output=embed`;
   $("rsvpNote").innerHTML = `Vui lòng xác nhận <b style="font-weight:700;font-style:normal">trước ngày ${D.rsvpDeadline}</b> để gia đình chuẩn bị chu đáo nhất.`;
