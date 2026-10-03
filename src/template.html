@@ -621,7 +621,7 @@
       <div class="f"><label for="rGuests">Số người tham dự</label><select id="rGuests" name="guests"><option>1 người</option><option>2 người</option><option>3 người</option><option>4 người</option></select></div>
       <button class="pill" type="submit">Gửi xác nhận</button>
     </form>
-    <div class="thanks" id="thanks"><p class="script" style="font-size:44px">Cảm ơn anh/chị</p><p>Chúng mình đã nhận được xác nhận. Hẹn gặp anh/chị trong ngày vui!</p></div>
+    <div class="thanks" id="thanks"><p class="script" style="font-size:44px" id="thanksTitle"></p><p id="thanksBody"></p></div>
   </section>
 
   <footer class="footer">
@@ -640,7 +640,7 @@
 /* ====== NỘI DUNG THIỆP — chỉnh ở đây ====== */
 window.DATA = {
   groom: "Hải Vũ", bride: "Phương Linh", initials: "VL",
-  guestLabel: "Trân trọng kính mời", guest: "{Tên khách}", honorific: "{anh/chị}",   // thay bằng link ?g=Tên&x=anh
+  guestLabel: "Trân trọng kính mời", guest: "{Tên khách}", honorific: "",   // thay bằng link ?g=Tên&x=anh
   logo: "/assets/logo.5f869a77.png",
   musicVolume: 0.2, dateShort: "16.11",      // nhạc nhúng sẵn từ assets/music_web.mp3 lúc build
   photo: "/assets/photo.6274e23e.jpg",
@@ -663,6 +663,8 @@ window.DATA = {
     { t: "18:30", l: "Lễ thành hôn",  icon: "rings" },
     { t: "18:45", l: "Tiệc cưới",     icon: "dinner" }
   ],
+  thanksTitle: "Cảm ơn {x}",
+  thanksBody: "Chúng tôi đã nhận được xác nhận. Hẹn gặp {x} trong ngày vui!",
   rsvpDeadline: "12/11/2026",
   contact: { label: "0946 503 155", tel: "0946503155" },
   calStart: "20261116T174500", calEnd: "20261116T220000", calTitle: "Tiệc cưới Hải Vũ & Phương Linh"
@@ -700,6 +702,10 @@ const ICONS = {
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
   $("announce").textContent = D.announce; $("venue").textContent = D.venue; $("address").textContent = D.address;
   $("whenTitle").textContent = D.whenTitle; $("whenDay").textContent = D.whenDay; $("whenDate").textContent = D.whenDate; $("whenTime").textContent = D.whenTime; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
+  /* Khách không khai xưng hô thì dùng lối gọi chung, không để trống câu. */
+  const who = D.honorific || "quý khách";
+  $("thanksTitle").textContent = D.thanksTitle.replace(/\{x\}/g, who);
+  $("thanksBody").textContent = D.thanksBody.replace(/\{x\}/g, who);
   $("heroImg").setAttribute("href", D.photo); $("cardDate").textContent = D.dateShort;
   $("park").innerHTML = D.parking.map(([t, d]) => `<p><b>${t}</b>${d}</p>`).join(""); $("map").src = `https://www.google.com/maps?q=${encodeURIComponent(D.mapQuery)}&z=16&output=embed`;
   $("rsvpNote").innerHTML = `Vui lòng xác nhận <b style="font-weight:700;font-style:normal">trước ngày ${D.rsvpDeadline}</b> để gia đình chuẩn bị chu đáo nhất.`;

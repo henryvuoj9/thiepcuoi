@@ -265,15 +265,6 @@ function build() {
     "dòng đọc tham số khách"
   );
 
-  /* 9b. Khách không khai xưng hô thì phải ra chuỗi rỗng, không được rơi về chữ
-         mẫu "{anh/chị}" — và lời kết phải gộp lại khoảng trắng thừa. */
-  html = replaceOnce(
-    html,
-    /D\.closing = D\.closing\.replace\("\{x\}", D\.honorific\)\.replace\("\{g\}", D\.guest\);/,
-    () => `D.closing = D.closing.replace("{x}", D.honorific).replace("{g}", D.guest).replace(/\\s+/g, " ").trim();`,
-    "dòng ghép lời kết"
-  );
-
   /* 10. Lời kết dùng khi không biết tên khách. */
   html = replaceOnce(
     html,
