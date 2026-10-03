@@ -181,7 +181,9 @@ test("khách không khai xưng hô thì không hiện chữ mẫu", () => {
 test("lời cảm ơn sau khi xác nhận chạy theo xưng hô, không hardcode", () => {
   assert.ok(!HTML.includes("Cảm ơn anh/chị"), "còn hardcode xưng hô");
   assert.ok(!HTML.includes("Chúng mình"), "còn xưng hô cũ của gia chủ");
-  assert.match(HTML, /thanksTitle: "Cảm ơn \{x\}"/);
-  assert.match(HTML, /thanksBody: "Chúng tôi đã nhận được xác nhận\. Hẹn gặp \{x\} trong ngày vui!"/);
-  assert.match(HTML, /const who = D\.honorific \|\| "quý khách"/, "thiếu lối gọi chung khi không có xưng hô");
+  /* Phải gọi cả tên: "Cảm ơn anh Tester 1", không phải mỗi "Cảm ơn anh". */
+  assert.match(HTML, /thanksTitle: "Cảm ơn \{x\} \{g\}"/);
+  assert.match(HTML, /thanksBody: "Chúng tôi đã nhận được xác nhận\. Hẹn gặp \{x\} \{g\} trong ngày vui!"/);
+  assert.match(HTML, /thanksTitleGeneric: "Cảm ơn quý khách"/, "thiếu lối gọi chung khi không biết khách là ai");
+  assert.match(HTML, /D\.guest \? fillGuest\(D\.thanksTitle\) : D\.thanksTitleGeneric/);
 });
