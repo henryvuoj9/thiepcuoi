@@ -27,6 +27,8 @@
      sẵn sàng; bìa vốn đã có màn chờ nên không ai thấy mình phải đợi. */
   var root = document.documentElement;
   function revealCoverText() { root.classList.add("fonts-ready"); }
+  function refit() { if (typeof window.__fit === "function") window.__fit(); }
+  function afterFonts() { revealCoverText(); refit(); }
 
   if (document.fonts && document.fonts.load) {
     /* Chỉ đợi đúng ba nét chữ mà bìa dùng, không đợi document.fonts.ready —
@@ -38,7 +40,15 @@
       document.fonts.load('400 40px "New Icon Script VN"', probe),
       document.fonts.load('500 17px "Cormorant SC"', probe),
       document.fonts.load('700 30px "Cormorant SC"', probe),
-    ]).then(revealCoverText, revealCoverText);
+    ]).then(afterFonts, afterFonts);
+
+    /* Hàm co chữ của bản gốc chạy theo document.fonts.ready. Nếu lời hứa đó
+       được giải quyết trước khi font kịp được yêu cầu — chuyện hoàn toàn có thể
+       xảy ra tuỳ thời điểm — thì chữ được đo bằng font dự phòng rồi không bao
+       giờ đo lại, và chữ tràn ra ngoài khung. Chạy lại cho chắc. */
+    if (document.fonts.addEventListener) {
+      document.fonts.addEventListener("loadingdone", refit);
+    }
     setTimeout(revealCoverText, 3000); // lưới an toàn: font hỏng cũng phải hiện chữ
   } else {
     revealCoverText();

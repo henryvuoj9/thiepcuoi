@@ -138,3 +138,27 @@ test("chế độ giảm chuyển động vẫn thấy chữ trên bìa", () => 
      kẹt ở opacity:0 nên toàn bộ chữ trên bìa vô hình. */
   assert.match(HTML, /@media \(prefers-reduced-motion:reduce\)\{\.cover[^}]*opacity:1!important\}/);
 });
+
+/* ---------- chống chữ tràn khung ---------- */
+
+test("mọi dòng chữ trên tấm thẻ đều nằm trong hệ tự-co-chữ", () => {
+  /* Trước đây chỉ tên cô dâu chú rể được tự co. "Save the date" và ngày thì
+     không — nên khi chữ bị vẽ to hơn thiết kế, chúng tràn ra và bị clip-path
+     của tấm thẻ cắt mất. */
+  assert.match(HTML, /<p class="sc fit">Save the date<\/p>/);
+  assert.match(HTML, /<p class="sc date fit" id="cardDate">/);
+});
+
+test("chạy lại hàm co chữ khi font về muộn", () => {
+  /* Hàm co chữ của bản gốc bám vào document.fonts.ready. Nếu lời hứa đó được
+     giải quyết trước khi font kịp được yêu cầu thì chữ bị đo bằng font dự
+     phòng rồi không bao giờ đo lại. */
+  assert.match(HTML, /document\.fonts\.addEventListener\("loadingdone", refit\)/);
+  assert.match(HTML, /function refit\(\) \{ if \(typeof window\.__fit === "function"\) window\.__fit\(\); \}/);
+});
+
+test("có trang chẩn đoán hiển thị, và nó im lặng khi không được gọi", () => {
+  assert.match(HTML, /if \(!\/\[\?&\]debug=1\/\.test\(location\.search\)\) return;/);
+  assert.match(HTML, /CHẨN ĐOÁN HIỂN THỊ/);
+  assert.match(HTML, /function textScale\(\)/);
+});

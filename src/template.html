@@ -284,6 +284,8 @@
      sẵn sàng; bìa vốn đã có màn chờ nên không ai thấy mình phải đợi. */
   var root = document.documentElement;
   function revealCoverText() { root.classList.add("fonts-ready"); }
+  function refit() { if (typeof window.__fit === "function") window.__fit(); }
+  function afterFonts() { revealCoverText(); refit(); }
 
   if (document.fonts && document.fonts.load) {
     /* Chỉ đợi đúng ba nét chữ mà bìa dùng, không đợi document.fonts.ready —
@@ -295,7 +297,15 @@
       document.fonts.load('400 40px "New Icon Script VN"', probe),
       document.fonts.load('500 17px "Cormorant SC"', probe),
       document.fonts.load('700 30px "Cormorant SC"', probe),
-    ]).then(revealCoverText, revealCoverText);
+    ]).then(afterFonts, afterFonts);
+
+    /* Hàm co chữ của bản gốc chạy theo document.fonts.ready. Nếu lời hứa đó
+       được giải quyết trước khi font kịp được yêu cầu — chuyện hoàn toàn có thể
+       xảy ra tuỳ thời điểm — thì chữ được đo bằng font dự phòng rồi không bao
+       giờ đo lại, và chữ tràn ra ngoài khung. Chạy lại cho chắc. */
+    if (document.fonts.addEventListener) {
+      document.fonts.addEventListener("loadingdone", refit);
+    }
     setTimeout(revealCoverText, 3000); // lưới an toàn: font hỏng cũng phải hiện chữ
   } else {
     revealCoverText();
@@ -417,6 +427,100 @@
   }
 })();
 </script>
+<script>/**
+ * Lớp chẩn đoán hiển thị, bật bằng ?debug=1
+ *
+ * Có những lỗi bố cục chỉ xảy ra trên máy thật và không tài nào dựng lại được
+ * bằng chế độ giả lập thiết bị của Chrome: người dùng bật phóng to chữ trong
+ * cài đặt hệ thống, font tải hỏng, hoặc trình duyệt trong ứng dụng Zalo/Messenger.
+ * Trang này đo thẳng những thứ đó rồi in ra để chụp màn hình gửi đi.
+ */
+(function () {
+  if (!/[?&]debug=1/.test(location.search)) return;
+
+  /**
+   * Đo hệ số phóng chữ của hệ thống.
+   * Canvas không bị cài đặt phóng chữ của trình duyệt tác động, còn DOM thì có —
+   * nên tỉ lệ giữa hai phép đo chính là hệ số đang bị áp.
+   */
+  function textScale() {
+    var probe = "ABCDEFGHIJabcdefghij0123456789";
+    var el = document.createElement("span");
+    el.textContent = probe;
+    el.style.cssText = "position:absolute;left:-9999px;top:0;font:16px/1 serif;white-space:pre";
+    document.body.appendChild(el);
+    var domWidth = el.getBoundingClientRect().width;
+    document.body.removeChild(el);
+
+    var ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return null;
+    ctx.font = "16px serif";
+    var canvasWidth = ctx.measureText(probe).width;
+    return canvasWidth ? domWidth / canvasWidth : null;
+  }
+
+  function box(sel) {
+    var el = document.querySelector(sel);
+    return el ? Math.round(el.getBoundingClientRect().width) : null;
+  }
+
+  function size(sel) {
+    var el = document.querySelector(sel);
+    if (!el) return "—";
+    var computed = Math.round(parseFloat(getComputedStyle(el).fontSize) * 10) / 10;
+    var inline = el.style.fontSize || "chưa đặt";
+    return computed + "px (hàm co chữ: " + inline + ")";
+  }
+
+  function report() {
+    var scale = textScale();
+    var fonts = document.fonts
+      ? ["400 40px \"New Icon Script VN\"", "500 17px \"Cormorant SC\"", "400 19px \"Cormorant Garamond\""]
+          .map(function (f) {
+            return (document.fonts.check(f, "Hải Vũ") ? "CÓ  " : "HỎNG") + "  " + f.replace(/"/g, "");
+          })
+          .join("\n")
+      : "trình duyệt không hỗ trợ kiểm tra font";
+
+    var lines = [
+      "CHẨN ĐOÁN HIỂN THỊ",
+      "",
+      "Màn hình   " + window.innerWidth + " x " + window.innerHeight + "  @" + (window.devicePixelRatio || 1) + "x",
+      "Thiết bị   " + screen.width + " x " + screen.height,
+      "Phóng chữ  " + (scale === null ? "không đo được" : scale.toFixed(2) + "x" + (scale > 1.05 ? "   <<< ĐANG BẬT PHÓNG CHỮ" : "  (bình thường)")),
+      "",
+      "FONT",
+      fonts,
+      "",
+      "KÍCH THƯỚC",
+      "trang      " + box(".sheet"),
+      "khối bìa   " + box(".comp"),
+      "tấm thẻ    " + box(".card"),
+      "",
+      "CỠ CHỮ TRÊN THẺ",
+      "Save the date  " + size(".card .sc:not(.date)"),
+      "tên           " + size("#cardNames .nm"),
+      "16.11         " + size("#cardDate"),
+      "",
+      "Trình duyệt",
+      navigator.userAgent,
+    ];
+
+    var pre = document.createElement("pre");
+    pre.textContent = lines.join("\n");
+    pre.style.cssText =
+      "position:fixed;left:0;right:0;top:0;z-index:99999;margin:0;padding:12px;" +
+      "background:#1b120c;color:#f6f2ec;font:11px/1.45 ui-monospace,Menlo,monospace;" +
+      "white-space:pre-wrap;word-break:break-word;max-height:100%;overflow:auto;" +
+      "border-bottom:2px solid #c9a46a";
+    document.body.appendChild(pre);
+  }
+
+  /* Đợi hàm co chữ chạy xong rồi mới đo, nếu không sẽ đo nhầm trạng thái giữa chừng. */
+  if (document.readyState === "complete") setTimeout(report, 2000);
+  else window.addEventListener("load", function () { setTimeout(report, 2000); });
+})();
+</script>
 </head>
 <body class="locked">
 
@@ -446,7 +550,7 @@
   <section class="hero">
     <div class="comp rv">
       <div class="env"><div class="ini" id="envInitials">V &amp; L</div></div>
-      <div class="card"><p class="sc">Save the date</p><h2 class="script names" id="cardNames"></h2><p class="sc date" id="cardDate">16.11</p></div>
+      <div class="card"><p class="sc fit">Save the date</p><h2 class="script names" id="cardNames"></h2><p class="sc date fit" id="cardDate">16.11</p></div>
       <div class="frame"><svg viewBox="0 0 200 240">
         <defs><clipPath id="ovalClip"><ellipse cx="100" cy="120" rx="66" ry="84"/></clipPath></defs>
         <path d="M100.0 12.0 A14.6 14.6 0 0 1 124.8 16.4 A14.6 14.6 0 0 1 147.6 29.1 A14.6 14.6 0 0 1 166.5 49.3 A14.6 14.6 0 0 1 180.0 75.1 A14.6 14.6 0 0 1 187.1 104.6 A14.6 14.6 0 0 1 187.1 135.4 A14.6 14.6 0 0 1 180.0 164.9 A14.6 14.6 0 0 1 166.5 190.7 A14.6 14.6 0 0 1 147.6 210.9 A14.6 14.6 0 0 1 124.8 223.6 A14.6 14.6 0 0 1 100.0 228.0 A14.6 14.6 0 0 1 75.2 223.6 A14.6 14.6 0 0 1 52.4 210.9 A14.6 14.6 0 0 1 33.5 190.7 A14.6 14.6 0 0 1 20.0 164.9 A14.6 14.6 0 0 1 12.9 135.4 A14.6 14.6 0 0 1 12.9 104.6 A14.6 14.6 0 0 1 20.0 75.1 A14.6 14.6 0 0 1 33.5 49.3 A14.6 14.6 0 0 1 52.4 29.1 A14.6 14.6 0 0 1 75.2 16.4 A14.6 14.6 0 0 1 100.0 12.0 Z" fill="#efe8dc"/>

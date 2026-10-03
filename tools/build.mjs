@@ -233,12 +233,13 @@ function build() {
     audio,
   };
   const loader = readFileSync(join(ROOT, "src", "client", "loader.js"), "utf8");
+  const debug = readFileSync(join(ROOT, "src", "client", "debug.js"), "utf8");
 
   html = replaceOnce(
     html,
     /\n<\/head>/,
     () =>
-      `\n${preloads}\n<script>window.__ASSETS=${JSON.stringify(manifest)}</script>\n<script>${loader}</script>\n</head>`,
+      `\n${preloads}\n<script>window.__ASSETS=${JSON.stringify(manifest)}</script>\n<script>${loader}</script>\n<script>${debug}</script>\n</head>`,
     "thẻ đóng head"
   );
 
@@ -326,6 +327,15 @@ function build() {
       `probe.alt = "Monogram"; probe.src = D.logo; }`,
     "đoạn dò tệp logo"
   );
+
+  /* 17. Đưa hai dòng chữ trên tấm thẻ vào hệ tự-co-chữ.
+         Trước đó chỉ có tên cô dâu chú rể được tự co; "Save the date" và ngày
+         thì không, nên khi chữ bị vẽ to hơn thiết kế (máy bật phóng chữ, hoặc
+         font rơi về bộ dự phòng rộng hơn) chúng tràn ra và bị clip-path cắt mất. */
+  html = replaceOnce(html, /<p class="sc">Save the date<\/p>/,
+    () => `<p class="sc fit">Save the date</p>`, 'dòng "Save the date"');
+  html = replaceOnce(html, /<p class="sc date" id="cardDate">/,
+    () => `<p class="sc date fit" id="cardDate">`, "dòng ngày trên thẻ");
 
   writeFileSync(OUT_TEMPLATE, html);
 
