@@ -162,3 +162,18 @@ test("có trang chẩn đoán hiển thị, và nó im lặng khi không đượ
   assert.match(HTML, /CHẨN ĐOÁN HIỂN THỊ/);
   assert.match(HTML, /function textScale\(\)/);
 });
+
+test("tấm thẻ không được vừa có left+right vừa có aspect-ratio", () => {
+  /* Safari tính bề rộng theo nội dung bên trong khi gặp tổ hợp đó, thẻ co lại
+     còn 2/3 và dồn sang trái vì mép trái vẫn neo ở 5%. Tệ hơn, nó tạo vòng lặp
+     phản hồi với hàm co chữ: thẻ hẹp -> chữ nhỏ -> nội dung hẹp -> thẻ hẹp thêm.
+     Ghi bề rộng ra tường minh thì không engine nào hiểu khác được. */
+  const rule = /\.card\{[^}]*\}/.exec(HTML)[0];
+  assert.ok(rule.includes("width:90%"), "thiếu bề rộng tường minh");
+  assert.ok(!rule.includes("right:5%"), "còn dùng right:5% cùng aspect-ratio");
+});
+
+test("khách không khai xưng hô thì không hiện chữ mẫu", () => {
+  assert.match(HTML, /if \(gName\) \{ D\.guest = gName; D\.honorific = gHon;/);
+  assert.match(HTML, /replace\(\/\\s\+\/g, " "\)\.trim\(\)/, "lời kết phải gộp khoảng trắng thừa");
+});

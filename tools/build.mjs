@@ -258,11 +258,20 @@ function build() {
     () =>
       `const qs = new URLSearchParams(location.search), G = window.GUEST || {};\n` +
       `  const gName = G.name || qs.get("g") || "", gHon = G.honorific || qs.get("x") || "";\n` +
-      `  if (gName) { D.guest = gName; if (gHon) D.honorific = gHon;\n` +
+      `  if (gName) { D.guest = gName; D.honorific = gHon;\n` +
       `                const rn = document.getElementById("rName"); if (rn) rn.value = gName; }\n` +
       `  else { D.guest = ""; D.honorific = ""; D.closing = D.closingGeneric;\n` +
       `         const gb = document.getElementById("guestBlock"); if (gb) gb.style.display = "none"; }\n`,
     "dòng đọc tham số khách"
+  );
+
+  /* 9b. Khách không khai xưng hô thì phải ra chuỗi rỗng, không được rơi về chữ
+         mẫu "{anh/chị}" — và lời kết phải gộp lại khoảng trắng thừa. */
+  html = replaceOnce(
+    html,
+    /D\.closing = D\.closing\.replace\("\{x\}", D\.honorific\)\.replace\("\{g\}", D\.guest\);/,
+    () => `D.closing = D.closing.replace("{x}", D.honorific).replace("{g}", D.guest).replace(/\\s+/g, " ").trim();`,
+    "dòng ghép lời kết"
   );
 
   /* 10. Lời kết dùng khi không biết tên khách. */

@@ -35,6 +35,20 @@
     return el ? Math.round(el.getBoundingClientRect().width) : null;
   }
 
+  /**
+   * Thẻ được đặt left:5% width:90% nên bề rộng phải đúng 90% khối bìa.
+   * Safari từng tính theo nội dung bên trong khi thẻ vừa có left+right vừa có
+   * aspect-ratio, làm thẻ co lại và dồn sang trái. So thẳng cho khỏi đoán.
+   */
+  function cardWidth() {
+    var actual = box(".card");
+    var comp = box(".comp");
+    if (actual === null || comp === null) return "—";
+    var expected = Math.round(comp * 0.9);
+    var off = Math.abs(actual - expected) > 2;
+    return actual + (off ? "  <<< SAI, phải là " + expected : "  (đúng)");
+  }
+
   function size(sel) {
     var el = document.querySelector(sel);
     if (!el) return "—";
@@ -66,7 +80,7 @@
       "KÍCH THƯỚC",
       "trang      " + box(".sheet"),
       "khối bìa   " + box(".comp"),
-      "tấm thẻ    " + box(".card"),
+      "tấm thẻ    " + cardWidth(),
       "",
       "CỠ CHỮ TRÊN THẺ",
       "Save the date  " + size(".card .sc:not(.date)"),
