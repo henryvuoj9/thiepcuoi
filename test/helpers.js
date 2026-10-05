@@ -11,6 +11,9 @@ const PASSWORD = "mat-khau-rat-dai-123";
 function makeFakeDb() {
   const state = { guests: [], rsvps: [], nextGuestId: 1 };
 
+  /* Dòng xác nhận còn "sống": không trỏ tới khách nào, hoặc trỏ tới khách còn tồn tại. */
+  const alive = (r) => r.guestId == null || state.guests.some((g) => String(g.id) === String(r.guestId));
+
   const api = {
     _state: state,
     async ensureSchema() {},
@@ -49,6 +52,9 @@ function makeFakeDb() {
       if (g) Object.assign(g, { slug, name, honorific, group_name: groupName, note });
     },
     async deleteGuest(id) {
+      /* Giống bản thật: xoá khách thì xoá luôn xác nhận của họ, nếu không các
+         dòng đó mồ côi và vẫn bị đếm. */
+      state.rsvps = state.rsvps.filter((r) => String(r.guestId) !== String(id));
       state.guests = state.guests.filter((g) => String(g.id) !== String(id));
     },
     async recordOpen(id) {
@@ -62,10 +68,24 @@ function makeFakeDb() {
       state.rsvps.push({ ...row, id: state.rsvps.length + 1, created_at: new Date() });
     },
     async listRsvps() {
-      return [...state.rsvps].reverse();
+      return [...state.rsvps].filter(alive).reverse();
     },
     async stats() {
-      return { total: state.guests.length, opened: 0, replies: 0, yes: 0, no: 0, heads: 0 };
+      /* Phản chiếu đúng ngữ nghĩa của bản thật: chỉ lấy xác nhận MỚI NHẤT của
+         mỗi khách, và bỏ qua dòng mồ côi. */
+      const latest = new Map();
+      for (const r of state.rsvps.filter(alive)) {
+        latest.set(r.guestId == null ? `n${r.id}` : `g${r.guestId}`, r);
+      }
+      const rows = [...latest.values()];
+      return {
+        total: state.guests.length,
+        opened: state.guests.filter((g) => g.opened_count > 0).length,
+        replies: rows.length,
+        yes: rows.filter((r) => r.attending).length,
+        no: rows.filter((r) => !r.attending).length,
+        heads: rows.filter((r) => r.attending).reduce((n, r) => n + (r.partySize || 1), 0),
+      };
     },
     async close() {},
   };

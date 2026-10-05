@@ -5,6 +5,11 @@ const { config } = require("./config");
 
 let pool = null;
 
+/* Dòng xác nhận "mồ côi": trỏ tới một khách đã bị xoá. Không được tính vào
+   bất kỳ con số nào. */
+const NOT_ORPHANED =
+  "(r.guest_id IS NULL OR EXISTS (SELECT 1 FROM guests g2 WHERE g2.id = r.guest_id))";
+
 function getPool() {
   if (!pool) {
     pool = mysql.createPool({
@@ -142,7 +147,15 @@ async function updateGuest(id, { slug, name, honorific, groupName, note }) {
   );
 }
 
+/**
+ * Xoá khách thì xoá luôn xác nhận của họ.
+ *
+ * Bảng rsvps không có ràng buộc khoá ngoại, nên trước đây các dòng xác nhận
+ * nằm lại sau khi khách bị xoá và vẫn được đếm — bảng thống kê báo 1 khách mời
+ * nhưng 4 người nhận lời.
+ */
 async function deleteGuest(id) {
+  await query("DELETE FROM rsvps WHERE guest_id = ?", [id]);
   await query("DELETE FROM guests WHERE id = ?", [id]);
 }
 
@@ -174,6 +187,7 @@ async function listRsvps() {
   return query(
     `SELECT r.*, g.group_name
        FROM rsvps r LEFT JOIN guests g ON g.id = r.guest_id
+      WHERE ${NOT_ORPHANED}
       ORDER BY r.id DESC`
   );
 }
@@ -182,13 +196,18 @@ async function stats() {
   const [g] = await query(
     "SELECT COUNT(*) AS total, SUM(opened_count > 0) AS opened FROM guests"
   );
+  /* Chỉ đếm xác nhận MỚI NHẤT của mỗi khách, và bỏ qua những dòng mồ côi —
+     dòng trỏ tới một khách đã bị xoá. Không lọc mồ côi thì xoá khách xong con
+     số vẫn đứng nguyên. Dòng có guest_id rỗng là người vào thiệp chung, vẫn
+     tính bình thường. */
   const [r] = await query(
     `SELECT COUNT(*) AS replies,
-            SUM(attending = 1) AS yes,
-            SUM(attending = 0) AS no,
-            COALESCE(SUM(CASE WHEN attending = 1 THEN party_size ELSE 0 END), 0) AS heads
-       FROM rsvps
-      WHERE id IN (SELECT MAX(id) FROM rsvps GROUP BY COALESCE(guest_id, CONCAT('n', id)))`
+            SUM(r.attending = 1) AS yes,
+            SUM(r.attending = 0) AS no,
+            COALESCE(SUM(CASE WHEN r.attending = 1 THEN r.party_size ELSE 0 END), 0) AS heads
+       FROM rsvps r
+      WHERE r.id IN (SELECT MAX(id) FROM rsvps GROUP BY COALESCE(guest_id, CONCAT('n', id)))
+        AND ${NOT_ORPHANED}`
   );
   return {
     total: Number(g.total || 0),
