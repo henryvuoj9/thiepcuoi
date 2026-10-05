@@ -4,6 +4,12 @@ node_modules/
 .DS_Store
 DEPLOYED_AT
 
-# Thư mục thiết kế gốc: 80 MB ảnh nghiên cứu và bản dựng thử.
+# Thư mục thiết kế gốc: ~80 MB ảnh nghiên cứu và bản dựng thử mỗi bản.
+# Dùng dấu * vì các bản tải về sau có tên "wedding_invitation (2)", "(3)"...
+# Lần trước chỉ ghi "wedding_invitation/" nên bản (2) lọt lên repo công khai.
 # Phần có giá trị lâu dài đã chép sang docs/ và source/.
-wedding_invitation/
+wedding_invitation*/
+
+# Tài liệu góp ý và ảnh chụp màn hình gửi kèm — tư liệu trao đổi, không phải mã
+*.docx
+*.jpeg
