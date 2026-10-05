@@ -71,7 +71,8 @@ test("bìa tự mở, không còn đòi khách phải chạm", () => {
   /* Góp ý từ gia đình: người lớn tuổi thấy khó với thao tác chạm, và dòng chữ
      "Mở thư và bật nhạc" vừa khó đọc trên nền tối vừa nghe như ra lệnh. */
   assert.ok(!HTML.includes("Mở thư và bật nhạc"), "dòng này đã bỏ theo yêu cầu gia đình");
-  assert.match(HTML, /const autoOpen = \(\) => setTimeout\(open, 1200\);/);
+  assert.match(HTML, /const autoOpen = \(\) => setTimeout\(open, Math\.max\(0, 8000 - performance\.now\(\)\)\);/,
+    "tự mở sau 8 giây kể từ lúc vào trang");
   assert.match(HTML, /if \(window\.__onAssetsReady\) window\.__onAssetsReady\(autoOpen\)/,
     "phải chờ tải xong rồi mới tự mở — hẹn giờ cứng sẽ bị cánh cửa khoá chặn và không thử lại");
 });
@@ -258,4 +259,20 @@ test("tiêu đề tab không dính dấu phiên bản của bản xem thử", ()
   const title = /<title>([^<]*)<\/title>/.exec(HTML)[1];
   assert.ok(!title.includes("["), `tiêu đề còn dấu phiên bản: ${title}`);
   assert.match(title, /Hải Vũ .* Phương Linh/);
+});
+
+test("cổng chờ bao gồm cả nhạc phát được và toàn bộ font", () => {
+  /* Chủ thiệp phản ánh: nhạc vào trễ hơn lúc thiệp mở. Tải xong chưa đủ —
+     trình duyệt còn phải giải mã, nên phải chờ tới canplaythrough. Và mở thiệp
+     ra mà chữ còn đang đổi mặt chữ thì cũng là chưa sẵn sàng. */
+  assert.match(HTML, /function loadAudio\(\)/);
+  assert.match(HTML, /el\.addEventListener\("canplaythrough", ok, \{ once: true \}\)/);
+  assert.match(HTML, /jobs\.push\(document\.fonts\.ready\.catch/, "font phải nằm trong cổng chờ");
+  assert.match(HTML, /MAX_WAIT_MS = 20000/, "lưới an toàn phải nới theo");
+});
+
+test("trang không có ký tự lạ trước thẻ doctype", () => {
+  /* Từng có hai ký tự "bN" lọt vào đầu tệp và trình duyệt hiển thị chúng
+     thành chữ ngay trên đầu thiệp. */
+  assert.ok(HTML.startsWith("<!doctype html>"), `tệp bắt đầu bằng: ${JSON.stringify(HTML.slice(0, 24))}`);
 });

@@ -1,4 +1,4 @@
-bN<!doctype html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -295,7 +295,7 @@ bN<!doctype html>
 
   /* Mạng hỏng giữa chừng thì vẫn phải mở được thiệp — thà thiếu một ảnh còn
      hơn khách đứng trước cánh cửa khoá vĩnh viễn. */
-  var MAX_WAIT_MS = 15000;
+  var MAX_WAIT_MS = 20000;
 
   /* Chống nháy font trên bìa.
      Trình duyệt vẽ chữ ngay bằng font dự phòng rồi mới đổi sang font thật khi
@@ -394,6 +394,31 @@ bN<!doctype html>
     });
   }
 
+  /**
+   * Tải nhạc VÀ chờ tới lúc phát được.
+   *
+   * Tải xong chưa đủ: trình duyệt còn phải giải mã. Nếu chỉ chờ tải, thiệp mở
+   * ra rồi nhạc mới vào sau một nhịp — đúng thứ chủ thiệp phản ánh.
+   */
+  function loadAudio() {
+    return grab(M.audio.url, audioCtl && audioCtl.signal)
+      .then(function (blob) {
+        var el = document.getElementById("bgm");
+        if (!el || bgmSrcSet || !blob) return;
+        bgmSrcSet = true;
+        el.preload = "auto";
+        el.src = URL.createObjectURL(blob);
+        return new Promise(function (done) {
+          var guard = setTimeout(done, 8000); // mạng kỳ quặc thì đừng treo mãi
+          function ok() { clearTimeout(guard); done(); }
+          el.addEventListener("canplaythrough", ok, { once: true });
+          el.addEventListener("error", ok, { once: true });
+          el.load();
+        });
+      })
+      .catch(function () { advance(M.audio.bytes || 0); });
+  }
+
   function start() {
     ring = document.getElementById("loadRing");
     bar = ring && ring.querySelector(".bar");
@@ -417,18 +442,13 @@ bN<!doctype html>
         .catch(function () { advance(a.bytes || 0); });
     });
 
-    jobs.push(
-      M.audio
-        ? grab(M.audio.url, audioCtl && audioCtl.signal)
-            .then(function (blob) {
-              if (bgmSrcSet || !blob) return;
-              bgmSrcSet = true;
-              var el = document.getElementById("bgm");
-              if (el) el.src = URL.createObjectURL(blob);
-            })
-            .catch(function () { advance(M.audio.bytes || 0); })
-        : Promise.resolve()
-    );
+    jobs.push(M.audio ? loadAudio() : Promise.resolve());
+
+    /* Font cũng phải xong. Mở thiệp ra mà chữ còn đang đổi mặt chữ thì cũng là
+       chưa sẵn sàng. */
+    if (document.fonts && document.fonts.ready) {
+      jobs.push(document.fonts.ready.catch(function () {}));
+    }
 
     Promise.all(jobs).then(function () { clearTimeout(guard); finish(); });
   }
@@ -796,8 +816,11 @@ const ICONS = {
      dừng đủ để khách kịp đọc tên mình. Chạm vẫn mở được sớm hơn.
      Bản chạy thật khoá cửa cho tới khi tải xong ảnh, nên phải chờ tín hiệu đó
      rồi mới hẹn giờ — hẹn cứng sẽ bị chặn và không bao giờ thử lại. */
-  const autoOpen = () => setTimeout(open, 1200);
-  if (window.__onAssetsReady) window.__onAssetsReady(autoOpen); else setTimeout(autoOpen, 2400);
+  /* Tự mở sau 8 giây kể từ lúc vào trang — nhưng không bao giờ sớm hơn lúc mọi
+     tài nguyên sẵn sàng. Khách bấm thì mở ngay, và cũng chỉ bấm được sau khi
+     tải xong (xem cánh cửa khoá trong hàm open). */
+  const autoOpen = () => setTimeout(open, Math.max(0, 8000 - performance.now()));
+  if (window.__onAssetsReady) window.__onAssetsReady(autoOpen); else setTimeout(autoOpen, 8000);
 
   const bgm = $("bgm"); bgm.volume = D.musicVolume;
   /* Bìa tự mở nên không có cú chạm nào — mà trình duyệt chỉ cho phát nhạc sau

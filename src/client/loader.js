@@ -18,7 +18,7 @@
 
   /* Mạng hỏng giữa chừng thì vẫn phải mở được thiệp — thà thiếu một ảnh còn
      hơn khách đứng trước cánh cửa khoá vĩnh viễn. */
-  var MAX_WAIT_MS = 15000;
+  var MAX_WAIT_MS = 20000;
 
   /* Chống nháy font trên bìa.
      Trình duyệt vẽ chữ ngay bằng font dự phòng rồi mới đổi sang font thật khi
@@ -117,6 +117,31 @@
     });
   }
 
+  /**
+   * Tải nhạc VÀ chờ tới lúc phát được.
+   *
+   * Tải xong chưa đủ: trình duyệt còn phải giải mã. Nếu chỉ chờ tải, thiệp mở
+   * ra rồi nhạc mới vào sau một nhịp — đúng thứ chủ thiệp phản ánh.
+   */
+  function loadAudio() {
+    return grab(M.audio.url, audioCtl && audioCtl.signal)
+      .then(function (blob) {
+        var el = document.getElementById("bgm");
+        if (!el || bgmSrcSet || !blob) return;
+        bgmSrcSet = true;
+        el.preload = "auto";
+        el.src = URL.createObjectURL(blob);
+        return new Promise(function (done) {
+          var guard = setTimeout(done, 8000); // mạng kỳ quặc thì đừng treo mãi
+          function ok() { clearTimeout(guard); done(); }
+          el.addEventListener("canplaythrough", ok, { once: true });
+          el.addEventListener("error", ok, { once: true });
+          el.load();
+        });
+      })
+      .catch(function () { advance(M.audio.bytes || 0); });
+  }
+
   function start() {
     ring = document.getElementById("loadRing");
     bar = ring && ring.querySelector(".bar");
@@ -140,18 +165,13 @@
         .catch(function () { advance(a.bytes || 0); });
     });
 
-    jobs.push(
-      M.audio
-        ? grab(M.audio.url, audioCtl && audioCtl.signal)
-            .then(function (blob) {
-              if (bgmSrcSet || !blob) return;
-              bgmSrcSet = true;
-              var el = document.getElementById("bgm");
-              if (el) el.src = URL.createObjectURL(blob);
-            })
-            .catch(function () { advance(M.audio.bytes || 0); })
-        : Promise.resolve()
-    );
+    jobs.push(M.audio ? loadAudio() : Promise.resolve());
+
+    /* Font cũng phải xong. Mở thiệp ra mà chữ còn đang đổi mặt chữ thì cũng là
+       chưa sẵn sàng. */
+    if (document.fonts && document.fonts.ready) {
+      jobs.push(document.fonts.ready.catch(function () {}));
+    }
 
     Promise.all(jobs).then(function () { clearTimeout(guard); finish(); });
   }

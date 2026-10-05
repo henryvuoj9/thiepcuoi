@@ -1,4 +1,4 @@
-bN<!doctype html>
+<!doctype html>
 <html lang="vi">
 <head>
 <meta charset="utf-8">
@@ -465,8 +465,11 @@ const ICONS = {
      dừng đủ để khách kịp đọc tên mình. Chạm vẫn mở được sớm hơn.
      Bản chạy thật khoá cửa cho tới khi tải xong ảnh, nên phải chờ tín hiệu đó
      rồi mới hẹn giờ — hẹn cứng sẽ bị chặn và không bao giờ thử lại. */
-  const autoOpen = () => setTimeout(open, 1200);
-  if (window.__onAssetsReady) window.__onAssetsReady(autoOpen); else setTimeout(autoOpen, 2400);
+  /* Tự mở sau 8 giây kể từ lúc vào trang — nhưng không bao giờ sớm hơn lúc mọi
+     tài nguyên sẵn sàng. Khách bấm thì mở ngay, và cũng chỉ bấm được sau khi
+     tải xong (xem cánh cửa khoá trong hàm open). */
+  const autoOpen = () => setTimeout(open, Math.max(0, 8000 - performance.now()));
+  if (window.__onAssetsReady) window.__onAssetsReady(autoOpen); else setTimeout(autoOpen, 8000);
 
   const bgm = $("bgm"); bgm.volume = D.musicVolume;
   /* Bìa tự mở nên không có cú chạm nào — mà trình duyệt chỉ cho phát nhạc sau
