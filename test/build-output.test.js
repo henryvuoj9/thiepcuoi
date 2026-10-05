@@ -240,12 +240,17 @@ test("giờ tiệc là 18h00 trên mọi chỗ", () => {
   assert.match(HTML, /\{ t: "18:00", l: "Đón khách"/, "lịch trình bắt đầu 18:00");
 });
 
-test("ngày đứng trước giờ và to hơn giờ", () => {
+test("ngày đứng trước giờ và bằng cỡ giờ", () => {
+  /* Trước đây ngày mang class fit nên bị hàm tự co ép xuống ~25px trong khi
+     giờ ở 62px — chênh nhau hơn hai lần. Giờ cả hai dùng chung một biến nên
+     không thể lệch. 0.85x là trần đo bằng số đo thật của font. */
   const when = /<div class="when rv d3"[^>]*>([\s\S]*?)<\/div>/.exec(HTML)[1];
   assert.ok(when.indexOf("whenDate") < when.indexOf("whenTime"), "ngày phải đứng trước giờ");
-  const date = parseFloat(/whenDate[^>]*--i-venue\) \* ([\d.]+)/.exec(when)[1]);
-  const time = parseFloat(/whenTime[^>]*--i-venue\) \* ([\d.]+)/.exec(when)[1]);
-  assert.ok(date > time, `ngày (${date}x) phải to hơn giờ (${time}x)`);
+  assert.ok(!/id="whenDate"[^>]*class="[^"]*\bfit\b/.test(HTML) && !/class="[^"]*\bfit\b[^"]*" id="whenDate"/.test(HTML),
+    "dòng ngày không được dùng hàm tự co nữa");
+  assert.match(when, /id="whenDate"[^>]*font-size:var\(--when-size\)/);
+  assert.match(when, /id="whenTime"[^>]*font-size:var\(--when-size\)/);
+  assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* \.85\)/);
 });
 
 test("không lặp xưng hô khi tên khách đã có sẵn", () => {
