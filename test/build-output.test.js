@@ -295,3 +295,22 @@ test("nhạc bị trình duyệt chặn thì nút nhạc nhấp nháy mời ch�
   assert.match(HTML, /\.music\.needs-tap\{[^}]*animation:musicpulse/);
   assert.match(HTML, /@keyframes musicpulse/);
 });
+
+test("dòng ngày ngắt làm hai để to lên được", () => {
+  /* Dòng này mang class fit — tự co cho vừa MỘT dòng, nên tăng cỡ chữ trong
+     CSS không có tác dụng gì: đo bằng số đo thật của font thì một dòng bị ép
+     xuống 24px, hai dòng cho 42px. Giới hạn là bề rộng cột, không phải cỡ chữ. */
+  assert.match(HTML, /whenDate: "Thứ Hai<br>16 tháng 11 năm 2026"/);
+  assert.match(HTML, /\$\("whenDate"\)\.innerHTML = D\.whenDate;/, "textContent sẽ in ra chữ <br>");
+});
+
+test("vòng tiến trình không đè lên lời mời", () => {
+  /* Vòng rộng 1.2x con tem nên mép dưới ở 0.60x tính từ tâm; lời mời đặt ở
+     0.80x. Trước đây vòng rộng 1.44x (mép dưới 0.72x) và lời mời ở 0.62x
+     nên hai cái chồng lên nhau. */
+  const ring = parseFloat(/\.ring\{[^}]*width:calc\(var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
+  const guest = parseFloat(/\.cover \.guest\{[^}]*top:calc\(var\(--c-tip\) \+ var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
+  const opener = parseFloat(/\.cover \.opener\{[^}]*top:calc\(var\(--c-tip\) \+ var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
+  assert.ok(guest > ring / 2 + 0.1, `lời mời (${guest}x) phải nằm dưới mép vòng tải (${ring / 2}x)`);
+  assert.ok(opener > guest + 0.3, `nút (${opener}x) phải nằm dưới lời mời (${guest}x)`);
+});

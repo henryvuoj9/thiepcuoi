@@ -98,7 +98,7 @@
   .letter span{font-family:var(--script);font-size:46px;color:var(--brown)}
   .cover.opening .letter{opacity:1;transform:translate(-50%,-78%) scale(1)}
   .cover.opening .zoom{transform:translateY(55%);transition:transform 1.3s cubic-bezier(.55,0,.6,1) .35s}
-  .cover .guest{position:absolute;left:0;right:0;top:calc(var(--c-tip) + var(--c-open-gap));text-align:center;z-index:4;padding:0 26px;pointer-events:none;opacity:0;animation:up .8s var(--ease) 1.1s forwards;line-height:1.7}
+  .cover .guest{position:absolute;left:0;right:0;top:calc(var(--c-tip) + var(--c-stamp) * .80);text-align:center;z-index:4;padding:0 26px;pointer-events:none;opacity:0;animation:up .8s var(--ease) 1.1s forwards;line-height:1.7}
   .cover .guest .sc{color:rgba(246,242,236,.85);font-size:var(--c-guest-label)}
   .cover .guest .name{font-family:var(--sc);font-weight:700;font-size:var(--c-guest-name);letter-spacing:.12em;color:var(--ivory);margin-top:2px;line-height:1.3}
   .cover .open{position:absolute;left:0;right:0;top:calc(var(--c-tip) + var(--c-open-gap));text-align:center;z-index:4;color:rgba(246,242,236,.9);font-size:var(--c-open);opacity:0;animation:up .8s var(--ease) 1.5s forwards,hint 3s ease-in-out 2.4s infinite;pointer-events:none}
@@ -244,7 +244,7 @@
   @media (min-width:900px){.venuepic{max-width:560px}}
   /* Nút mở phong bì. Chỉ hiện và chỉ bấm được sau khi tải xong — trước đó khách
      bấm cũng không mở, mời bấm lúc ấy chỉ gây bực. */
-  .cover .opener{position:absolute;left:50%;top:calc(var(--c-tip) + var(--c-guest-gap));
+  .cover .opener{position:absolute;left:50%;top:calc(var(--c-tip) + var(--c-stamp) * 1.35);
     transform:translateX(-50%);z-index:6;font-family:var(--sc);font-weight:600;
     font-size:15px;letter-spacing:.16em;padding:16px 36px 15px;border-radius:999px;border:0;
     background:var(--ivory);color:var(--brown);box-shadow:0 10px 26px rgba(0,0,0,.4);
@@ -312,7 +312,7 @@
     <div class="map rv d2"><iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Bản đồ địa điểm"></iframe></div>
     <div class="park rv d2" id="park"></div>
     <p class="sc rv d3" style="margin-top:44px">Vào lúc</p>
-    <div class="when rv d3" style="margin-top:14px"><span class="script fit" id="whenDate" style="display:block;font-size:calc(var(--i-venue) * 2.16);line-height:1.12"></span><span class="script" id="whenTime" style="display:block;font-size:calc(var(--i-venue) * 1.2);line-height:1.1;margin-top:8px"></span></div>
+    <div class="when rv d3" style="margin-top:14px"><span class="script fit" id="whenDate" style="display:block;font-size:calc(var(--i-venue) * 2.16);line-height:1.08"></span><span class="script" id="whenTime" style="display:block;font-size:calc(var(--i-venue) * 1.2);line-height:1.1;margin-top:8px"></span></div>
     <p class="rv d3" style="margin:40px 0 0"><a class="pill" href="#rsvp" id="toRsvp">Xác nhận tham dự</a></p>
     <p class="copy rv d3" style="margin-top:34px;font-size:19px;font-weight:600;font-style:normal;max-width:360px;text-wrap:balance" id="closing"></p>
   </section>
@@ -377,7 +377,7 @@ window.DATA = {
   ],
   mapQuery: "Pan Pacific Hanoi, 1 Thanh Niên, Ba Đình, Hà Nội",
   weddingDate: "2026-11-16T18:00:00+07:00",
-  whenTime: "18h00", whenDate: "Thứ Hai, ngày 16 tháng 11 năm 2026",
+  whenTime: "18h00", whenDate: "Thứ Hai<br>16 tháng 11 năm 2026",
   closing: "Sự hiện diện của {x} {g} sẽ là niềm vui và niềm vinh hạnh đối với hai gia đình chúng tôi!",
   closingGeneric: "Sự hiện diện của quý khách sẽ là niềm vui và niềm vinh hạnh đối với hai gia đình chúng tôi!",
   timeline: [
@@ -431,7 +431,7 @@ const ICONS = {
   const par = a => `${a[0]} <b>${a[1]}</b><br>${a[2]} <b>${a[3]}</b>`;
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
   $("announce").textContent = D.guest ? fillGuest(D.announce) : D.announceGeneric; $("venue").textContent = D.venue; $("address").textContent = D.address;
-  $("whenTime").textContent = D.whenTime; $("whenDate").textContent = D.whenDate; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
+  $("whenTime").textContent = D.whenTime; $("whenDate").innerHTML = D.whenDate; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
   /* Hai câu cảm ơn vẫn đi qua bộ thay chỗ, nên muốn gọi đích danh về sau thì
      chỉ cần viết {x} {g} vào chuỗi trong window.DATA, không phải sửa mã. */
   $("thanksTitle").textContent = fillGuest(D.thanksTitle);

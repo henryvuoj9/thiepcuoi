@@ -207,7 +207,7 @@ function build() {
     html,
     /\n<\/style>/,
     () =>
-      `\n  .ring{position:absolute;left:var(--c-tipx,50%);top:var(--c-tip);width:calc(var(--c-stamp) * 1.44);height:calc(var(--c-stamp) * 1.44);` +
+      `\n  .ring{position:absolute;left:var(--c-tipx,50%);top:var(--c-tip);width:calc(var(--c-stamp) * 1.2);height:calc(var(--c-stamp) * 1.2);` +
       `transform:translate(-50%,-50%) rotate(-90deg);z-index:4;pointer-events:none;opacity:0;transition:opacity .5s ease}\n` +
       `  .ring.on{opacity:1}\n` +
       `  .ring circle{fill:none;stroke-width:1.2;stroke-linecap:round}\n` +
