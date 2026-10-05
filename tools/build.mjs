@@ -270,8 +270,7 @@ function build() {
       `  const gName = G.name || qs.get("g") || "", gHon = G.honorific || qs.get("x") || "";\n` +
       `  if (gName) { D.guest = gName; D.honorific = gHon;\n` +
       `                const rn = document.getElementById("rName"); if (rn) rn.value = gName; }\n` +
-      `  else { D.guest = ""; D.honorific = ""; D.closing = D.closingGeneric;\n` +
-      `         const gb = document.getElementById("guestBlock"); if (gb) gb.style.display = "none"; }\n`,
+      `  else { D.guest = ""; D.honorific = ""; D.closing = D.closingGeneric; }\n`,
     "dòng đọc tham số khách"
   );
 

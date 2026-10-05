@@ -276,3 +276,19 @@ test("trang không có ký tự lạ trước thẻ doctype", () => {
      thành chữ ngay trên đầu thiệp. */
   assert.ok(HTML.startsWith("<!doctype html>"), `tệp bắt đầu bằng: ${JSON.stringify(HTML.slice(0, 24))}`);
 });
+
+test("bìa luôn có lời mời, kể cả khi không biết khách là ai", () => {
+  /* Trước đây khối này bị ẩn hẳn với người vào thiệp chung, làm bìa trống trải
+     trông như thiệp hỏng. */
+  assert.match(HTML, /\$\("guestName"\)\.textContent = D\.guest \? \(\(honCap \? honCap \+ " " : ""\) \+ D\.guest\) : "quý khách";/);
+  assert.ok(!HTML.includes('getElementById("guestBlock"); if (gb) gb.style.display = "none"'),
+    "không được ẩn khối lời mời nữa");
+});
+
+test("nhạc bị trình duyệt chặn thì nút nhạc nhấp nháy mời chạm", () => {
+  /* Trình duyệt chỉ cho phát âm thanh sau một thao tác của người dùng, mà bìa
+     tự mở nên không có thao tác nào. Không lách được — chỉ làm cho dễ thấy. */
+  assert.match(HTML, /btn\.classList\.add\("off", "needs-tap"\)/);
+  assert.match(HTML, /\.music\.needs-tap\{[^}]*animation:musicpulse/);
+  assert.match(HTML, /@keyframes musicpulse/);
+});

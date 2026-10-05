@@ -105,6 +105,11 @@
   .cover .open i{display:block;font-style:normal;margin-top:6px;font-size:12px;letter-spacing:0}
   .music{position:fixed;right:16px;bottom:16px;z-index:55;width:40px;height:40px;border-radius:50%;border:1px solid rgba(61,43,32,.35);background:rgba(246,242,236,.9);color:var(--brown);font-size:18px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.2)}
   .music.off{opacity:.55;text-decoration:line-through}
+  /* Khi trình duyệt chặn tự phát, nút nhạc nhấp nháy để khách biết là chạm được. */
+  .music.needs-tap{opacity:1;text-decoration:none;animation:musicpulse 1.9s ease-in-out infinite}
+  @keyframes musicpulse{
+    0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.2),0 0 0 0 rgba(91,31,42,.5)}
+    50%{box-shadow:0 6px 16px rgba(0,0,0,.2),0 0 0 14px rgba(91,31,42,0)}}
   .flash{position:fixed;inset:0;margin:0 auto;max-width:none;background:var(--ivory);z-index:60;opacity:0;pointer-events:none;transition:opacity .45s ease}
   .flash.on{opacity:1}
 
@@ -405,7 +410,9 @@ const ICONS = {
   $("guestLabel").textContent = D.guestLabel;
   const hon = dedupHon();
   const honCap = hon ? hon.charAt(0).toUpperCase() + hon.slice(1) : "";
-  $("guestName").textContent = (honCap ? honCap + " " : "") + D.guest;
+  /* Không biết khách là ai thì vẫn phải có lời mời — bìa trống trải trông như
+     thiệp hỏng. Gọi chung "quý khách". */
+  $("guestName").textContent = D.guest ? ((honCap ? honCap + " " : "") + D.guest) : "quý khách";
   $("envInitials").innerHTML = D.initials.split("").join(" &amp; "); $("monoInitials").textContent = D.initials;
   const par = a => `${a[0]} <b>${a[1]}</b><br>${a[2]} <b>${a[3]}</b>`;
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
@@ -476,13 +483,21 @@ const ICONS = {
      một thao tác của người dùng. Thử phát; bị chặn thì hiện nút nhạc và bắt cú
      chạm đầu tiên ở bất kỳ đâu trên trang. */
   function startMusic(){
-    bgm.play().then(() => { $("musicBtn").hidden = false; $("musicBtn").classList.remove("off"); })
-      .catch(() => {
-        $("musicBtn").hidden = false; $("musicBtn").classList.add("off");
-        document.addEventListener("pointerdown", function once(){
-          bgm.play().then(() => $("musicBtn").classList.remove("off")).catch(() => {});
-        }, { once: true });
-      });
+    const btn = $("musicBtn");
+    const playing = () => { btn.hidden = false; btn.classList.remove("off", "needs-tap"); };
+    bgm.play().then(playing).catch(() => {
+      /* Trình duyệt chỉ cho phát âm thanh sau một thao tác của người dùng. Bìa
+         tự mở sau 8 giây nên không có thao tác nào — không có cách nào lách.
+         Hiện nút nhạc và cho nó nhấp nháy để khách thấy, đồng thời bắt cú chạm
+         đầu tiên ở bất kỳ đâu trên trang. */
+      btn.hidden = false; btn.classList.add("off", "needs-tap");
+      ["pointerdown", "keydown"].forEach(ev =>
+        document.addEventListener(ev, function once(){
+          bgm.play().then(playing).catch(() => {});
+          ["pointerdown", "keydown"].forEach(e2 => document.removeEventListener(e2, once));
+        }, { once: true })
+      );
+    });
   }
   $("musicBtn").addEventListener("click", () => {
     if (bgm.paused) { bgm.play(); $("musicBtn").classList.remove("off"); }
