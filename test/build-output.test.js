@@ -300,7 +300,10 @@ test("dòng ngày ngắt làm hai để to lên được", () => {
   /* Dòng này mang class fit — tự co cho vừa MỘT dòng, nên tăng cỡ chữ trong
      CSS không có tác dụng gì: đo bằng số đo thật của font thì một dòng bị ép
      xuống 24px, hai dòng cho 42px. Giới hạn là bề rộng cột, không phải cỡ chữ. */
-  assert.match(HTML, /whenDate: "Thứ Hai<br>Ngày 16 Tháng 11<br>Năm 2026"/);
+  /* Hai dòng, và chữ rút gọn để cỡ chữ gần bằng "18h00". Giữ nguyên cách viết
+     đầy đủ thì dòng dài tới mức hàm tự co ép xuống 23px — nhỏ hơn 18h00 một nửa. */
+  assert.match(HTML, /whenDate: "Thứ Hai<br>16 Tháng 11, 2026"/);
+  assert.equal((HTML.match(/whenDate: "[^"]*"/)[0].match(/<br>/g) || []).length, 1, "đúng hai dòng");
   assert.match(HTML, /\$\("whenDate"\)\.innerHTML = D\.whenDate;/, "textContent sẽ in ra chữ <br>");
 });
 
