@@ -67,14 +67,17 @@ test("chỗ máy chủ chèn tên khách vẫn còn", () => {
 
 /* ---------- hành vi màn bìa ---------- */
 
-test("bìa tự mở, không còn đòi khách phải chạm", () => {
-  /* Góp ý từ gia đình: người lớn tuổi thấy khó với thao tác chạm, và dòng chữ
-     "Mở thư và bật nhạc" vừa khó đọc trên nền tối vừa nghe như ra lệnh. */
-  assert.ok(!HTML.includes("Mở thư và bật nhạc"), "dòng này đã bỏ theo yêu cầu gia đình");
-  assert.match(HTML, /const autoOpen = \(\) => setTimeout\(open, Math\.max\(0, 8000 - performance\.now\(\)\)\);/,
-    "tự mở sau 8 giây kể từ lúc vào trang");
-  assert.match(HTML, /if \(window\.__onAssetsReady\) window\.__onAssetsReady\(autoOpen\)/,
-    "phải chờ tải xong rồi mới tự mở — hẹn giờ cứng sẽ bị cánh cửa khoá chặn và không thử lại");
+test("không tự mở; mở bằng nút, và nút chỉ ăn sau khi tải xong", () => {
+  /* Từng thử tự mở để người lớn tuổi khỏi phải thao tác, nhưng trình duyệt chỉ
+     cho phát nhạc sau một thao tác của người dùng — tự mở thì mất nhạc. Quay
+     lại nút bấm, nhưng làm hẳn một nút rõ ràng như gia đình góp ý, chứ không
+     bắt khách đoán là phải chạm vào phong bì. */
+  assert.ok(!HTML.includes("const autoOpen"), "không được còn hẹn giờ tự mở");
+  assert.match(HTML, /<button class="opener" id="opener" type="button">Mở phong bì<\/button>/);
+  assert.match(HTML, /\$\("opener"\)\.addEventListener\("click"/);
+  /* Chưa tải xong thì nút trong suốt và không nhận cú bấm. */
+  assert.match(HTML, /\.cover \.opener\{[^}]*opacity:0;pointer-events:none/);
+  assert.match(HTML, /\.cover\.ready \.opener\{opacity:1;pointer-events:auto/);
 });
 
 test("nền giấy được tách ra tệp riêng, không nhúng base64", () => {
