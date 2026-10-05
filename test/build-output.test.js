@@ -67,10 +67,13 @@ test("chỗ máy chủ chèn tên khách vẫn còn", () => {
 
 /* ---------- hành vi màn bìa ---------- */
 
-test("dòng mời mở thư vẫn còn, nhưng chỉ hiện sau khi tải xong", () => {
-  /* Từng bỏ hẳn, rồi chủ thiệp muốn giữ lại — nhưng vẫn phải gắn với .ready,
-     vì mời chạm trong lúc bìa chưa mở được thì chỉ gây bực. */
-  assert.ok(HTML.includes("Mở thư và bật nhạc"), "chủ thiệp muốn giữ dòng này");
+test("bìa tự mở, không còn đòi khách phải chạm", () => {
+  /* Góp ý từ gia đình: người lớn tuổi thấy khó với thao tác chạm, và dòng chữ
+     "Mở thư và bật nhạc" vừa khó đọc trên nền tối vừa nghe như ra lệnh. */
+  assert.ok(!HTML.includes("Mở thư và bật nhạc"), "dòng này đã bỏ theo yêu cầu gia đình");
+  assert.match(HTML, /const autoOpen = \(\) => setTimeout\(open, 1200\);/);
+  assert.match(HTML, /if \(window\.__onAssetsReady\) window\.__onAssetsReady\(autoOpen\)/,
+    "phải chờ tải xong rồi mới tự mở — hẹn giờ cứng sẽ bị cánh cửa khoá chặn và không thử lại");
 });
 
 test("nền giấy được tách ra tệp riêng, không nhúng base64", () => {
@@ -145,7 +148,7 @@ test("mọi dòng chữ trên tấm thẻ đều nằm trong hệ tự-co-chữ"
   /* Trước đây chỉ tên cô dâu chú rể được tự co. "Save the date" và ngày thì
      không — nên khi chữ bị vẽ to hơn thiết kế, chúng tràn ra và bị clip-path
      của tấm thẻ cắt mất. */
-  assert.match(HTML, /<p class="sc fit">Save the date<\/p>/);
+  assert.match(HTML, /<p class="sc fit">Lễ Thành hôn<\/p>/, 'gia đình muốn chữ Việt thay cho "Save the date"');
   assert.match(HTML, /<p class="sc date fit" id="cardDate">/);
 });
 
@@ -184,5 +187,75 @@ test("lời cảm ơn sau khi xác nhận chạy theo xưng hô, không hardcode
   assert.match(HTML, /thanksTitle: "Cảm ơn quý khách"/);
   assert.match(HTML, /thanksBody: "Chúng tôi đã nhận được xác nhận\. Hẹn gặp quý khách trong ngày vui!"/);
   /* Bộ thay chỗ vẫn còn, nên đổi sang gọi đích danh chỉ là sửa chuỗi trong DATA. */
-  assert.match(HTML, /const fillGuest = t => t\.replace\(\/\\\{x\\\}\/g, D\.honorific\)/);
+  assert.match(HTML, /const fillGuest = t => t\.replace\(.*dedupHon\(\)\)/);
+});
+
+/* ---------- bản burgundy, theo góp ý của gia đình ---------- */
+
+test("không còn mã màu nâu nào", () => {
+  for (const brown of ["#4a3426", "#3b2819", "#5c4433", "#3d2b20", "#2a1c14", "#4d3126", "#2f1d15"]) {
+    assert.ok(!HTML.includes(brown), `còn sót màu nâu ${brown}`);
+  }
+  assert.match(HTML, /--brown:#5b1f2a/);
+});
+
+test("chữ màu đen trung tính, không ám đỏ", () => {
+  /* Bảng màu burgundy kéo cả màu chữ sang đỏ trầm; gia đình muốn chữ đen. */
+  assert.match(HTML, /--ink:#1f1f1f; --ink-2:#434343; --ink-3:#787878;/);
+});
+
+test("khối xác nhận cùng nền đỏ với khối lịch trình", () => {
+  const agenda = /\.agenda\{background:(#[0-9a-f]+)/.exec(HTML)[1];
+  const rsvp = /\.rsvp-block\{background:(#[0-9a-f]+)/.exec(HTML)[1];
+  assert.equal(rsvp, agenda, "hai khối phải cùng một màu nền");
+});
+
+test("lời mời và lời kết gọi đúng tên khách", () => {
+  assert.match(HTML, /announce: "Trân trọng kính mời \{x\} \{g\} đến tham dự/);
+  assert.match(HTML, /closing: "Sự hiện diện của \{x\} \{g\} sẽ là niềm vui/);
+  assert.match(HTML, /announceGeneric: "Trân trọng kính mời quý khách/);
+  assert.match(HTML, /closingGeneric: "Sự hiện diện của quý khách/);
+  assert.match(HTML, /\$\("announce"\)\.textContent = D\.guest \? fillGuest\(D\.announce\) : D\.announceGeneric;/);
+});
+
+test("ảnh khách sạn được tách ra tệp riêng", () => {
+  /* Nó nằm trong thẻ <img src="data:"> nội tuyến chứ không phải biến CSS, nên
+     rất dễ lọt khỏi vòng tách tài nguyên và nằm lại 196 KB trong template. */
+  assert.match(HTML, /<img src="\/assets\/venue-photo\.[a-z0-9]+\.jpg" alt="Khách sạn Pan Pacific"/);
+});
+
+test("đã bỏ số điện thoại và dòng liên hệ cô dâu chú rể", () => {
+  assert.ok(!HTML.includes("0946 503 155"), "còn số điện thoại");
+  assert.ok(!HTML.includes("liên hệ cô dâu chú rể"), "còn dòng liên hệ");
+});
+
+test("giờ tiệc là 18h00 trên mọi chỗ", () => {
+  assert.match(HTML, /weddingDate: "2026-11-16T18:00:00\+07:00"/, "mốc đếm ngược");
+  assert.match(HTML, /calStart: "20261116T180000"/, "giờ trong lịch Google");
+  assert.match(HTML, /whenTime: "18h00"/, "giờ hiển thị");
+  assert.match(HTML, /\{ t: "18:00", l: "Đón khách"/, "lịch trình bắt đầu 18:00");
+});
+
+test("ngày đứng trước giờ và to hơn giờ", () => {
+  const when = /<div class="when rv d3"[^>]*>([\s\S]*?)<\/div>/.exec(HTML)[1];
+  assert.ok(when.indexOf("whenDate") < when.indexOf("whenTime"), "ngày phải đứng trước giờ");
+  const date = parseFloat(/whenDate[^>]*--i-venue\) \* ([\d.]+)/.exec(when)[1]);
+  const time = parseFloat(/whenTime[^>]*--i-venue\) \* ([\d.]+)/.exec(when)[1]);
+  assert.ok(date > time, `ngày (${date}x) phải to hơn giờ (${time}x)`);
+});
+
+test("không lặp xưng hô khi tên khách đã có sẵn", () => {
+  /* Nhiều người nhập "Cô Mai" vào ô tên rồi lại chọn xưng hô "cô" — ghép thêm
+     sẽ ra "cô Cô Mai" ngay trên thiệp cưới. */
+  assert.match(HTML, /const dedupHon = \(\) => \{/);
+  assert.match(HTML, /x && g\.toLowerCase\(\)\.indexOf\(x\.toLowerCase\(\) \+ " "\) === 0 \? "" : x/);
+  assert.match(HTML, /const hon = dedupHon\(\);/, "bìa thiệp cũng phải dùng cùng phép khử trùng");
+});
+
+test("tiêu đề tab không dính dấu phiên bản của bản xem thử", () => {
+  /* Bản xem thử đứng riêng có đóng dấu "[BURGUNDY ngày giờ]" vào tiêu đề để
+     phân biệt file; thứ đó lọt lên bản chạy thật thì khách nhìn thấy trên tab. */
+  const title = /<title>([^<]*)<\/title>/.exec(HTML)[1];
+  assert.ok(!title.includes("["), `tiêu đề còn dấu phiên bản: ${title}`);
+  assert.match(title, /Hải Vũ .* Phương Linh/);
 });

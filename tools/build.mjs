@@ -159,6 +159,16 @@ function build() {
     console.log(`Logo             dùng ${logoFile.replace(ROOT + "/", "")}`);
   }
 
+  /* 4c. Ảnh khách sạn nằm trong thẻ <img src="data:"> nội tuyến, không phải
+         biến CSS, nên vòng tách tài nguyên ở trên không chạm tới. Bỏ sót thì
+         196 KB base64 nằm lại trong template và mọi khách phải tải lại mỗi lượt. */
+  html = replaceOnce(
+    html,
+    /<img src="data:(image\/[a-z]+);base64,([A-Za-z0-9+\/=]+)" alt="Khách sạn Pan Pacific"/,
+    (m) => `<img src="${fromBase64(m[1], m[2], "venue-photo")}" alt="Khách sạn Pan Pacific"`,
+    "ảnh khách sạn"
+  );
+
   /* 5. Nhạc nền: cắt + nén, bỏ hẳn khỏi HTML. */
   let audio = null;
   html = replaceOnce(
@@ -265,14 +275,6 @@ function build() {
     "dòng đọc tham số khách"
   );
 
-  /* 10. Lời kết dùng khi không biết tên khách. */
-  html = replaceOnce(
-    html,
-    /\n  closing: "/,
-    (m) => `\n  closingGeneric: "Rất mong được đón tiếp quý khách trong ngày vui của gia đình chúng tôi.",${m[0]}`,
-    "khoá closing"
-  );
-
   /* 11. Con tem đập khi tải xong, thay cho mốc 2,6 giây cố định. */
   html = replaceOnce(
     html,
@@ -327,15 +329,6 @@ function build() {
       `probe.alt = "Monogram"; probe.src = D.logo; }`,
     "đoạn dò tệp logo"
   );
-
-  /* 17. Đưa hai dòng chữ trên tấm thẻ vào hệ tự-co-chữ.
-         Trước đó chỉ có tên cô dâu chú rể được tự co; "Save the date" và ngày
-         thì không, nên khi chữ bị vẽ to hơn thiết kế (máy bật phóng chữ, hoặc
-         font rơi về bộ dự phòng rộng hơn) chúng tràn ra và bị clip-path cắt mất. */
-  html = replaceOnce(html, /<p class="sc">Save the date<\/p>/,
-    () => `<p class="sc fit">Save the date</p>`, 'dòng "Save the date"');
-  html = replaceOnce(html, /<p class="sc date" id="cardDate">/,
-    () => `<p class="sc date fit" id="cardDate">`, "dòng ngày trên thẻ");
 
   writeFileSync(OUT_TEMPLATE, html);
 

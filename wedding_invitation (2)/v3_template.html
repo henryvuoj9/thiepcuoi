@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hải Vũ &amp; Phương Linh — Thiệp cưới</title>
+<meta name="theme-color" content="#3a2418">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  /* Font tên: New Icon Script (font mẫu Canva) + bộ dấu tiếng Việt ghép thêm — nhúng thẳng vào file */
+  @font-face{font-family:"New Icon Script VN";font-style:normal;font-weight:400;font-display:swap;
+    src:url(data:font/woff2;base64,__FONT_B64__) format("woff2");}
+
+  :root{
+    --ivory:#f4efe7;        /* nền giấy ngà (Etsy) */
+    --ivory-2:#ebe4d9;
+    --chestnut:#3a2418;     /* nâu hạt dẻ (phong bì, footer, nút) */
+    --chestnut-2:#2b1911;
+    --chestnut-3:#553627;
+    --ink:#2f1d15;
+    --ink-2:#6b5446;        /* caps phụ */
+    --ink-3:#9c8878;
+    --line:rgba(58,36,24,.22);
+    --on-dark:#efe7db;
+    --on-dark-2:rgba(239,231,219,.62);
+
+    --script:"New Icon Script VN","Pinyon Script",cursive;
+    --sc:"Cormorant SC","Cormorant Garamond",Georgia,serif;
+    --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+    --col:470px;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  html,body{margin:0;padding:0}
+  body{
+    background:#1e120c radial-gradient(90% 60% at 50% 0%, #3a2418 0%, #1e120c 70%);
+    color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.5;
+    min-height:100vh;display:flex;justify-content:center;align-items:flex-start;
+  }
+  body.locked{overflow:hidden;height:100vh;height:100dvh}
+  .sheet{width:100%;max-width:var(--col);min-height:100vh;position:relative;background:var(--ivory);color:var(--ink);
+    box-shadow:0 0 0 1px rgba(255,255,255,.04), 0 50px 120px rgba(0,0,0,.7)}
+  @media (min-width:560px){ .sheet{margin:24px 0;min-height:calc(100vh - 48px)} }
+
+  /* vân giấy */
+  .grain::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+  /* ---------- typo ---------- */
+  .sc{font-family:var(--sc);font-weight:500;font-size:13px;letter-spacing:.22em;text-transform:none;margin:0;color:var(--ink-2)}
+  .sc.sm{font-size:12px;letter-spacing:.24em}
+  .sc.lg{font-size:15px;letter-spacing:.2em}
+  .script{font-family:var(--script);font-weight:400;line-height:1.05;letter-spacing:0;margin:0;color:var(--chestnut)}
+  .script.xl{font-size:64px}
+  .script.lg{font-size:clamp(38px,12vw,48px)}
+  .script.md{font-size:38px}
+  .ital{font-style:italic;font-weight:300}
+  .on-dark{color:var(--on-dark)}
+  .on-dark .sc{color:var(--on-dark-2)}
+  .on-dark .script{color:var(--on-dark)}
+  .pill{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    font-family:var(--sc);font-weight:500;font-size:13px;letter-spacing:.18em;
+    padding:14px 30px 13px;border-radius:999px;background:var(--chestnut-3);color:var(--on-dark);
+    border:0;text-decoration:none;cursor:pointer;box-shadow:0 8px 20px rgba(58,36,24,.22);
+    transition:background .35s var(--ease),transform .35s var(--ease);-webkit-tap-highlight-color:transparent;
+  }
+  .pill:hover{background:var(--chestnut);transform:translateY(-1px)}
+  .pill svg{width:13px;height:13px}
+  .link{font-family:var(--sc);font-size:13px;letter-spacing:.2em;color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:2px}
+  .link:hover{color:var(--chestnut);border-color:var(--chestnut)}
+
+  .rv{opacity:0;transform:translateY(18px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+  .rv.in{opacity:1;transform:none}
+  .rv.d1{transition-delay:.15s}.rv.d2{transition-delay:.3s}.rv.d3{transition-delay:.45s}
+
+  /* ---------- cover ---------- */
+  .cover{
+    position:fixed;inset:0;margin:0 auto;width:100%;max-width:var(--col);z-index:50;
+    background:var(--chestnut-2);color:var(--on-dark);
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:16px;
+    padding:max(60px,env(safe-area-inset-top)) 28px max(40px,env(safe-area-inset-bottom));
+    text-align:center;overflow:hidden;transition:opacity 1s var(--ease),visibility 1s;
+  }
+  .cover::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(75% 48% at 50% 38%, rgba(120,80,60,.45) 0%, rgba(43,25,17,0) 70%)}
+  .cover.gone{opacity:0;visibility:hidden;pointer-events:none}
+  .cover > *{position:relative;width:100%}
+  .cover .env-wrap{width:min(340px,90%)}
+  .cover .sc{color:var(--on-dark-2)}
+  .cover .names{font-size:clamp(46px,15vw,64px);margin:14px 0 0;color:var(--on-dark);white-space:nowrap}
+  .cover .names small{display:block;font-size:.78em;margin-top:-.05em}
+  .hint{animation:hint 2.8s ease-in-out infinite}
+  @keyframes hint{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* phong bì */
+  .env-wrap{width:min(340px,90%);aspect-ratio:3/2;position:relative;perspective:1500px;cursor:pointer;-webkit-tap-highlight-color:transparent;margin-top:10px}
+  .env{position:absolute;inset:0;transform-style:preserve-3d;transition:transform 1.2s var(--ease);filter:drop-shadow(0 40px 50px rgba(0,0,0,.6)) drop-shadow(0 8px 12px rgba(0,0,0,.35))}
+  .env-wrap:hover .env{transform:translateY(-4px)}
+  .paper{background-color:#ece6dc;background-image:
+    linear-gradient(160deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 45%,rgba(0,0,0,.05) 100%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .10 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .env .back{position:absolute;inset:0}
+  .env .letter{position:absolute;left:5%;right:5%;top:5%;height:90%;background:var(--ivory);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--chestnut);z-index:1;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);transition:transform 1.1s var(--ease)}
+  .env .letter::before{content:"";position:absolute;inset:9px;border:1px solid var(--line)}
+  .env .letter .script{font-size:34px}
+  .env .side{position:absolute;inset:0;z-index:2}
+  .env .side.l{clip-path:polygon(0 0,50% 50%,0 100%);box-shadow:inset 1px 0 0 rgba(255,255,255,.5)}
+  .env .side.r{clip-path:polygon(100% 0,50% 50%,100% 100%)}
+  .env .side.b{clip-path:polygon(0 100%,50% 50%,100% 100%);background-image:linear-gradient(0deg,rgba(0,0,0,.06),rgba(255,255,255,.35) 60%),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .10 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .env .flap{position:absolute;left:0;right:0;top:0;height:52%;z-index:4;transform-origin:top center;
+    clip-path:polygon(0 0,100% 0,50% 100%);transition:transform 1s var(--ease),z-index 0s 1s;backface-visibility:hidden;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.5) 0%,rgba(255,255,255,0) 40%,rgba(0,0,0,.10) 100%),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .10 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .env .flap-in{position:absolute;left:0;right:0;top:0;height:52%;z-index:0;transform-origin:top center;transform:rotateX(180deg);
+    background:linear-gradient(0deg,#d9d1c4 0%,#cfc6b8 100%);clip-path:polygon(0 0,100% 0,50% 100%);transition:transform 1s var(--ease);backface-visibility:hidden}
+  /* dấu sáp oval ngà */
+  .seal{position:absolute;left:50%;top:52%;width:74px;height:92px;transform:translate(-50%,-50%);z-index:5;border-radius:50%;
+    background:radial-gradient(ellipse at 42% 30%, #fbf8f2 0%, #efe9df 45%, #d8d0c2 100%);
+    box-shadow:0 10px 18px rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.25), inset 0 -4px 6px rgba(0,0,0,.14), inset 0 3px 4px rgba(255,255,255,.9);
+    display:flex;align-items:center;justify-content:center;transition:transform .5s var(--ease),opacity .5s}
+  .seal::before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(58,36,24,.18);box-shadow:inset 0 1px 1px rgba(255,255,255,.8), 0 1px 0 rgba(255,255,255,.6)}
+  .seal::after{content:"";position:absolute;inset:11px;border-radius:50%;border:1px dotted rgba(58,36,24,.25)}
+  .seal span{font-family:var(--script);font-size:32px;line-height:1;color:#b3a794;
+    text-shadow:0 1px 0 rgba(255,255,255,.9), 0 -1px 0 rgba(58,36,24,.35);transform:translate(-3px,-2px)}
+  .env-wrap.open .seal{transform:translate(-50%,-50%) scale(.6);opacity:0}
+  .env-wrap.open .flap{transform:rotateX(180deg);z-index:0}
+  .env-wrap.open .flap-in{transform:rotateX(0)}
+  .env-wrap.open .letter{transform:translateY(-56%) scale(1.04);transition-delay:.55s}
+  .env-wrap.open .env{transform:translateY(40px) scale(1.06);transition-delay:1.15s}
+
+  /* ---------- sections ---------- */
+  .sec{padding:64px 30px;text-align:center;position:relative}
+  .sec.dark{background:var(--chestnut);color:var(--on-dark)}
+  .hero{padding-top:76px}
+  .hero .photo{width:190px;height:250px;margin:0 auto 34px;position:relative;border-radius:50%/50%;overflow:visible}
+  .hero .photo img{width:100%;height:100%;object-fit:cover;border-radius:inherit;filter:sepia(.25) saturate(.8) contrast(1.02);display:block}
+  .hero .photo::before{content:"";position:absolute;inset:-9px;border:1px solid var(--line);border-radius:inherit}
+  .hero .photo::after{content:"";position:absolute;inset:-14px;border:1px dotted var(--line);border-radius:inherit}
+  .hero .names{font-size:clamp(42px,13.5vw,58px);margin:14px 0 0;white-space:nowrap}
+  .hero .names .amp{display:block;font-size:.62em;line-height:.9;color:var(--chestnut-3);margin:2px 0}
+  .fit{white-space:nowrap}
+  .hero .date{margin-top:22px}
+  .hero .city{font-size:clamp(26px,8vw,32px);margin-top:10px;color:var(--chestnut-3)}
+  .rule{width:34px;height:1px;background:var(--line);margin:28px auto}
+
+  .copy{max-width:330px;margin:0 auto;font-style:italic;font-weight:300;font-size:19px;line-height:1.65;color:var(--ink-2)}
+  .family{display:grid;grid-template-columns:1fr 1fr;margin:30px auto 0;max-width:360px;position:relative}
+  .family::before{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:1px;background:var(--line)}
+  .fam .sc{margin-bottom:10px}
+  .fam p{margin:0;font-size:17px;line-height:1.6;font-weight:400}
+  .fam .who{font-family:var(--script);font-size:clamp(22px,7vw,30px);margin-top:12px;line-height:1;color:var(--chestnut);white-space:nowrap}
+
+  .ev{padding:34px 0 30px;border-top:1px solid var(--line)}
+  .ev:first-child{border-top:0;padding-top:20px}
+  .ev .script{font-size:clamp(34px,11vw,44px);white-space:nowrap}
+  .ev .sc{margin-top:12px}
+  .ev .place{font-family:var(--sc);font-size:18px;letter-spacing:.06em;margin:16px 0 2px;color:var(--ink)}
+  .ev .addr{font-style:italic;font-weight:300;color:var(--ink-2);margin:0;font-size:17px}
+  .ev .pill{margin-top:20px}
+
+  .count{display:flex;justify-content:center;margin:28px auto 0}
+  .cd{min-width:72px;position:relative}
+  .cd b{display:block;font-family:var(--sc);font-weight:400;font-size:44px;line-height:1;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .cd span{display:block;font-family:var(--sc);font-size:11px;letter-spacing:.22em;margin-top:8px;color:var(--ink-3)}
+  .cd+.cd::before{content:":";position:absolute;left:-5px;top:0;font-family:var(--sc);font-size:38px;color:var(--ink-3)}
+
+  /* form */
+  .form{max-width:330px;margin:26px auto 0;text-align:left}
+  .f{margin-bottom:18px}
+  .f label{display:block;font-family:var(--sc);font-size:12px;letter-spacing:.2em;color:var(--ink-2);margin-bottom:4px}
+  .f input,.f textarea,.f select{width:100%;font-family:var(--serif);font-size:19px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--line);
+    padding:8px 0;outline:none;border-radius:0;-webkit-appearance:none;appearance:none;transition:border-color .3s;font-style:italic}
+  .f input::placeholder,.f textarea::placeholder{color:var(--ink-3)}
+  .f textarea{resize:vertical;min-height:60px}
+  .f input:focus,.f textarea:focus,.f select:focus{border-bottom-color:var(--chestnut)}
+  .f select{font-style:normal;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%236b5446' stroke-width='1.2'/></svg>");background-repeat:no-repeat;background-position:right 2px center}
+  .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:6px}
+  .seg input{position:absolute;opacity:0;pointer-events:none}
+  .seg label{margin:0;text-align:center;padding:12px 6px 11px;cursor:pointer;font-family:var(--sc);font-size:12px;letter-spacing:.14em;color:var(--ink-2);transition:background .3s,color .3s}
+  .seg input:checked+label{background:var(--chestnut-3);color:var(--on-dark)}
+  .form .pill{width:100%;margin-top:8px}
+  .thanks{display:none;margin:26px auto 0;max-width:300px}
+  .thanks.show{display:block}
+  .form.hide{display:none}
+  .thanks p{font-style:italic;font-weight:300;color:var(--ink-2);margin:12px 0 0}
+
+  /* footer */
+  .footer{padding:76px 30px 56px;text-align:center;color:var(--on-dark);position:relative;overflow:hidden;
+    background:#3a2418 radial-gradient(120% 90% at 30% 10%, #5a3b2b 0%, #3a2418 55%, #2b1911 100%)}
+  .footer::before{content:"";position:absolute;inset:0;opacity:.35;mix-blend-mode:overlay;pointer-events:none;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .footer > *{position:relative}
+  .mono{width:150px;height:186px;margin:0 auto;display:flex;align-items:center;justify-content:center;position:relative}
+  .mono::before{content:"";position:absolute;inset:0;border:1px solid rgba(239,231,219,.75);border-radius:50%}
+  .mono::after{content:"";position:absolute;inset:7px;border:1px solid rgba(239,231,219,.35);border-radius:50%}
+  .mono span{font-family:var(--script);font-size:74px;line-height:1;color:var(--on-dark);transform:translate(-4px,-4px)}
+  .mono img{width:100%;height:100%;object-fit:contain}
+  .mono.has-img::before,.mono.has-img::after{display:none}
+  .footer .contact{font-size:17px;color:var(--on-dark-2);margin:34px auto 0;max-width:300px;font-weight:300;font-style:italic;line-height:1.6}
+  .footer .contact a{color:var(--on-dark);text-decoration:none;border-bottom:1px solid rgba(239,231,219,.35)}
+  .footer .names{font-size:clamp(42px,13.5vw,58px);margin:10px 0 0;color:var(--on-dark);white-space:nowrap}
+  .footer .names small{display:block;font-size:.78em;margin-top:-.05em}
+  .footer .up{display:inline-block;margin-top:50px;font-family:var(--sc);font-size:12px;letter-spacing:.22em;color:var(--on-dark-2);background:none;border:0;cursor:pointer;border-bottom:1px solid rgba(239,231,219,.3);padding:0 0 2px}
+  .footer .up:hover{color:var(--on-dark)}
+
+  @media (max-width:380px){
+    .cover .names{font-size:64px}.hero .names{font-size:56px}.script.xl{font-size:54px}.cd{min-width:62px}.cd b{font-size:38px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body class="locked">
+
+<!-- ============ COVER ============ -->
+<div class="cover" id="cover">
+  <div>
+    <p class="sc">Trân trọng kính mời</p>
+    <h1 class="script names fit" id="coverNames">Hải Vũ<small>&amp; Phương Linh</small></h1>
+  </div>
+  <div class="env-wrap" id="envWrap" role="button" tabindex="0" aria-label="Mở thiệp mời">
+    <div class="env">
+      <div class="back paper"></div>
+      <div class="flap-in"></div>
+      <div class="letter"><span class="script" id="letterInitials">V &amp; L</span><span class="sc sm" id="letterDate">15 . 11 . 2026</span></div>
+      <div class="side l paper"></div><div class="side r paper"></div><div class="side b paper"></div>
+      <div class="flap paper"></div>
+      <div class="seal"><span id="sealInitials">VL</span></div>
+    </div>
+  </div>
+  <p class="sc sm hint" id="hint">Chạm vào phong bì để mở thiệp</p>
+</div>
+
+<!-- ============ NỘI DUNG ============ -->
+<div class="sheet grain" id="sheet">
+<main aria-label="Nội dung thiệp">
+
+  <section class="sec hero">
+    <div class="photo rv"><img id="heroImg" alt="Ảnh cưới"></div>
+    <p class="sc rv d1">Thiệp mời lễ thành hôn</p>
+    <h2 class="script names rv d1 fit" id="heroNames">Hải Vũ<span class="amp">&amp;</span>Phương Linh</h2>
+    <p class="sc lg date rv d2" id="heroDate">Chủ nhật · 15 . 11 . 2026</p>
+    <p class="script city rv d2 fit" id="heroCity">Thành phố Hồ Chí Minh</p>
+    <div class="rule rv d3"></div>
+    <p class="copy rv d3" id="invite">Hạnh phúc của chúng mình sẽ trọn vẹn hơn khi có bạn cùng chứng kiến. Rất mong được đón tiếp bạn trong ngày vui.</p>
+    <div class="family rv d3">
+      <div class="fam"><p class="sc sm">Nhà trai</p><p id="groomParents">Ông Nguyễn Văn A<br>Bà Trần Thị B</p><div class="who fit" id="groomName">Hải Vũ</div></div>
+      <div class="fam"><p class="sc sm">Nhà gái</p><p id="brideParents">Ông Phạm Văn C<br>Bà Lê Thị D</p><div class="who fit" id="brideName">Phương Linh</div></div>
+    </div>
+  </section>
+
+  <section class="sec" style="padding-top:10px">
+    <p class="sc rv">Chương trình</p>
+    <div id="events" class="rv d1"></div>
+  </section>
+
+  <section class="sec" style="padding-top:20px">
+    <p class="sc rv">Đếm ngược tới ngày vui</p>
+    <div class="count rv d1">
+      <div class="cd"><b id="cdD">0</b><span>Ngày</span></div>
+      <div class="cd"><b id="cdH">00</b><span>Giờ</span></div>
+      <div class="cd"><b id="cdM">00</b><span>Phút</span></div>
+      <div class="cd"><b id="cdS">00</b><span>Giây</span></div>
+    </div>
+    <p class="rv d2" style="margin:30px 0 0"><a class="link" id="calBtn" href="#" target="_blank" rel="noopener">Thêm vào lịch</a></p>
+  </section>
+
+  <section class="sec" style="padding-top:30px">
+    <p class="sc rv">Xác nhận tham dự</p>
+    <h2 class="script lg rv d1" style="margin-top:8px">Rất mong gặp bạn</h2>
+    <p class="copy rv d1" id="rsvpNote" style="margin-top:14px;font-size:17px">Vui lòng xác nhận trước ngày 01 . 11 . 2026 để gia đình chuẩn bị chu đáo.</p>
+    <form class="form rv d2" id="rsvp" novalidate>
+      <div class="f"><label for="rName">Họ và tên</label><input id="rName" name="name" type="text" autocomplete="name" placeholder="Tên của bạn" required></div>
+      <div class="f"><label>Bạn sẽ tham dự chứ?</label>
+        <div class="seg">
+          <input type="radio" name="attend" id="aYes" value="yes" checked><label for="aYes">Có, mình sẽ đến</label>
+          <input type="radio" name="attend" id="aNo" value="no"><label for="aNo">Rất tiếc, mình bận</label>
+        </div></div>
+      <div class="f"><label for="rGuests">Số người tham dự</label>
+        <select id="rGuests" name="guests"><option>1 người</option><option>2 người</option><option>3 người</option><option>4 người</option></select></div>
+      <div class="f"><label for="rEvent">Tham dự buổi</label><select id="rEvent" name="event"></select></div>
+      <div class="f"><label for="rMsg">Lời nhắn gửi cô dâu chú rể</label><textarea id="rMsg" name="message" placeholder="Chúc hai bạn trăm năm hạnh phúc…"></textarea></div>
+      <button class="pill" type="submit">Gửi xác nhận</button>
+    </form>
+    <div class="thanks" id="thanks"><p class="script lg">Cảm ơn bạn</p><p>Chúng mình đã nhận được xác nhận. Hẹn gặp bạn trong ngày vui!</p></div>
+  </section>
+
+  <footer class="footer">
+    <div class="mono rv" id="mono"><span id="monoInitials">VL</span></div>
+    <p class="contact rv d1" id="footerContact">Mọi thắc mắc xin liên hệ cô dâu chú rể qua số <a href="tel:0900000000">0900 000 000</a></p>
+    <p class="sc rv d2" style="margin-top:40px;color:var(--on-dark-2)">Với tất cả yêu thương</p>
+    <p class="script names rv d2 fit" id="footerNames">Hải Vũ<small>&amp; Phương Linh</small></p>
+    <button class="up rv d3" id="toTop" type="button">Về đầu thư</button>
+  </footer>
+
+</main>
+</div>
+
+<script>
+/* ====== NỘI DUNG THIỆP — chỉnh ở đây ====== */
+window.DATA = {
+  groom: "Hải Vũ", bride: "Phương Linh", initials: "VL",
+  logo: "",                                    // URL logo VL; trống → thử logo.png cạnh trang → không có thì dùng oval + chữ VL
+  photo: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80", // ảnh oval hero (placeholder)
+  groomParents: "Ông Nguyễn Văn A<br>Bà Trần Thị B",
+  brideParents: "Ông Phạm Văn C<br>Bà Lê Thị D",
+  weddingDate: "2026-11-15T18:00:00+07:00",
+  dateShort: "15 . 11 . 2026",
+  dateLine: "Chủ nhật · 15 . 11 . 2026",
+  city: "Thành phố Hồ Chí Minh",
+  invite: "Hạnh phúc của chúng mình sẽ trọn vẹn hơn khi có bạn cùng chứng kiến. Rất mong được đón tiếp bạn trong ngày vui.",
+  rsvpDeadline: "01 . 11 . 2026",
+  contact: { label: "0900 000 000", tel: "0900000000" },
+  events: [
+    { title: "Lễ Thành Hôn", time: "09:30", date: "Chủ nhật, 15 . 11 . 2026", place: "Tư gia nhà trai", address: "123 Đường ABC, Quận Y, TP.HCM", map: "123 Đường ABC, Quận Y, TP.HCM" },
+    { title: "Tiệc Cưới",    time: "18:00", date: "Chủ nhật, 15 . 11 . 2026", place: "Gem Center", address: "8 Nguyễn Bỉnh Khiêm, Quận 1, TP.HCM", map: "Gem Center, 8 Nguyễn Bỉnh Khiêm, Quận 1" }
+  ],
+  calStart: "20261115T180000", calEnd: "20261115T220000",
+  calTitle: "Tiệc cưới Hải Vũ & Phương Linh", calLocation: "Gem Center, 8 Nguyễn Bỉnh Khiêm, Quận 1, TP.HCM"
+};
+(function(){
+  const D = window.DATA, $ = id => document.getElementById(id);
+  $("coverNames").innerHTML = $("footerNames").innerHTML = `${D.groom}<small>&amp; ${D.bride}</small>`;
+  $("heroNames").innerHTML = `${D.groom}<span class="amp">&amp;</span>${D.bride}`;
+  $("heroDate").textContent = D.dateLine; $("heroCity").textContent = D.city; $("invite").textContent = D.invite;
+  $("letterInitials").innerHTML = D.initials.split("").join(" &amp; "); $("letterDate").textContent = D.dateShort;
+  $("sealInitials").textContent = $("monoInitials").textContent = D.initials;
+  $("groomParents").innerHTML = D.groomParents; $("brideParents").innerHTML = D.brideParents;
+  $("groomName").textContent = D.groom; $("brideName").textContent = D.bride;
+  $("heroImg").src = D.photo;
+  $("rsvpNote").textContent = `Vui lòng xác nhận trước ngày ${D.rsvpDeadline} để gia đình chuẩn bị chu đáo.`;
+  $("footerContact").innerHTML = `Mọi thắc mắc xin liên hệ cô dâu chú rể qua số <a href="tel:${D.contact.tel}">${D.contact.label}</a>`;
+  const probe = new Image(); probe.onload = () => { const m = $("mono"); m.innerHTML = ""; m.appendChild(probe); m.classList.add("has-img"); }; probe.alt = "Monogram"; probe.src = D.logo || "logo.png";
+
+  const pin = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
+  $("events").innerHTML = D.events.map(e => `<article class="ev">
+      <h3 class="script fit">${e.title}</h3>
+      <p class="sc">${e.time} · ${e.date}</p>
+      <p class="place">${e.place}</p><p class="addr">${e.address}</p>
+      <a class="pill" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.map)}">${pin}Xem bản đồ</a>
+    </article>`).join("");
+  $("rEvent").innerHTML = D.events.map(e => `<option>${e.title} · ${e.time}</option>`).join("") + `<option>Cả hai buổi</option>`;
+
+  const target = new Date(D.weddingDate).getTime();
+  const tick = () => { let s = Math.max(0, Math.floor((target - Date.now())/1000));
+    $("cdD").textContent = Math.floor(s/86400); s %= 86400; $("cdH").textContent = String(Math.floor(s/3600)).padStart(2,"0"); s %= 3600;
+    $("cdM").textContent = String(Math.floor(s/60)).padStart(2,"0"); $("cdS").textContent = String(s%60).padStart(2,"0"); };
+  tick(); setInterval(tick, 1000);
+  $("calBtn").href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(D.calTitle)}&dates=${D.calStart}/${D.calEnd}&ctz=Asia/Ho_Chi_Minh&location=${encodeURIComponent(D.calLocation)}`;
+
+  $("rsvp").addEventListener("submit", e => { e.preventDefault();
+    const name = $("rName"); if (!name.value.trim()) { name.focus(); name.style.borderBottomColor = "#9a3b2e"; return; }
+    $("rsvp").classList.add("hide"); $("thanks").classList.add("show"); });
+
+  const io = new IntersectionObserver(es => es.forEach(x => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } }), { threshold: .1 });
+  document.querySelectorAll(".rv").forEach(el => io.observe(el));
+
+  const wrap = $("envWrap"), cover = $("cover"); let opened = false;
+  function openEnvelope(){ if (opened) return; opened = true;
+    wrap.classList.add("open"); $("hint").style.animation = "none"; $("hint").style.opacity = 0;
+    setTimeout(() => { cover.classList.add("gone"); document.body.classList.remove("locked"); window.scrollTo(0,0); }, 2000); }
+  wrap.addEventListener("click", openEnvelope);
+  wrap.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openEnvelope(); } });
+  $("toTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+  /* co chữ script vừa bề rộng khung */
+  function fit(){ document.querySelectorAll(".fit").forEach(el => { el.style.fontSize = ""; const base = parseFloat(getComputedStyle(el).fontSize);
+    const ps = getComputedStyle(el.parentElement); const w = el.parentElement.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight), sw = el.scrollWidth; if (sw > w) el.style.fontSize = Math.max(18, base * w / sw * .97) + "px"; }); }
+  document.fonts.ready.then(fit); window.addEventListener("resize", fit); setTimeout(fit, 1500);
+})();
+</script>
+</body>
+</html>
