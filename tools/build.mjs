@@ -236,10 +236,15 @@ function build() {
     )
     .join("\n");
 
+  /* Chia làm hai đợt. Trước đây bắn hết 13 yêu cầu cùng lúc cùng mức ưu tiên,
+     nên con tem 61 KB phải tranh băng thông với nhạc 618 KB và khung ren 262 KB
+     — nó về muộn hàng giây dù đã khai báo tải trước. Đợt một chỉ ba tài nguyên
+     của màn bìa; phần còn lại chờ đợt một xong mới chạy. */
+  const isCoverAsset = (a) => COVER.has(a.name);
+  const payload = written.filter((a) => !a.name.startsWith("bgm") && !selfHostedFonts.has(a.url));
   const manifest = {
-    assets: written
-      .filter((a) => !a.name.startsWith("bgm") && !selfHostedFonts.has(a.url))
-      .map((a) => ({ url: a.url, bytes: a.bytes })),
+    cover: payload.filter(isCoverAsset).map((a) => ({ url: a.url, bytes: a.bytes })),
+    assets: payload.filter((a) => !isCoverAsset(a)).map((a) => ({ url: a.url, bytes: a.bytes })),
     audio,
   };
   const loader = readFileSync(join(ROOT, "src", "client", "loader.js"), "utf8");
@@ -267,10 +272,10 @@ function build() {
     /const qs = new URLSearchParams\(location\.search\); if \(qs\.get\("g"\)\)[^\n]*\n/,
     () =>
       `const qs = new URLSearchParams(location.search), G = window.GUEST || {};\n` +
-      `  const gName = G.name || qs.get("g") || "", gHon = G.honorific || qs.get("x") || "";\n` +
-      `  if (gName) { D.guest = gName; D.honorific = gHon;\n` +
+      `  const gName = G.name || qs.get("g") || "";\n` +
+      `  if (gName) { D.guest = gName;\n` +
       `                const rn = document.getElementById("rName"); if (rn) rn.value = gName; }\n` +
-      `  else { D.guest = ""; D.honorific = ""; D.closing = D.closingGeneric; }\n`,
+      `  else { D.guest = ""; D.closing = D.closingGeneric; }\n`,
     "dòng đọc tham số khách"
   );
 

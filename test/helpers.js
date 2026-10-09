@@ -36,20 +36,19 @@ function makeFakeDb() {
       }
       return [...seen].map(([group_name, n]) => ({ group_name, n }));
     },
-    async createGuest({ slug, name, honorific, groupName, note }) {
+    async createGuest({ slug, name, groupName, note }) {
       const id = state.nextGuestId++;
       state.guests.push({
         id, slug, name,
-        honorific: honorific || "",
         group_name: groupName || "",
         note: note || "",
         opened_count: 0, first_opened_at: null, last_opened_at: null,
       });
       return id;
     },
-    async updateGuest(id, { slug, name, honorific, groupName, note }) {
+    async updateGuest(id, { slug, name, groupName, note }) {
       const g = await api.guestById(id);
-      if (g) Object.assign(g, { slug, name, honorific, group_name: groupName, note });
+      if (g) Object.assign(g, { slug, name, group_name: groupName, note });
     },
     async deleteGuest(id) {
       /* Giống bản thật: xoá khách thì xoá luôn xác nhận của họ, nếu không các

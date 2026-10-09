@@ -150,8 +150,10 @@
       bar.style.strokeDashoffset = String(CIRC);
     }
 
+    var coverList = (M.cover || []).slice();
     var list = (M.assets || []).slice();
-    for (var i = 0; i < list.length; i++) total += list[i].bytes || 0;
+    for (var i = 0; i < coverList.length; i++) total += coverList[i].bytes || 0;
+    for (var j = 0; j < list.length; j++) total += list[j].bytes || 0;
     if (M.audio) total += M.audio.bytes || 0;
     if (!total) return finish();
 
@@ -159,19 +161,26 @@
 
     var guard = setTimeout(finish, MAX_WAIT_MS);
 
-    var jobs = list.map(function (a) {
-      return grab(a.url)
-        .then(function () { return decodeImage(a.url); })
-        .catch(function () { advance(a.bytes || 0); });
+    function fetchAll(items) {
+      return Promise.all(items.map(function (a) {
+        return grab(a.url)
+          .then(function () { return decodeImage(a.url); })
+          .catch(function () { advance(a.bytes || 0); });
+      }));
+    }
+
+    /* Đợt một: chỉ phong bì, con tem và font chữ ký — những thứ khách nhìn thấy
+       ngay. Chạy một mình nên không bị các tệp lớn tranh băng thông. */
+    var wave1 = fetchAll(coverList);
+
+    /* Đợt hai: phần còn lại, nhạc và font. Chỉ bắt đầu khi đợt một xong. */
+    var wave2 = wave1.then(function () {
+      var jobs = [fetchAll(list), M.audio ? loadAudio() : Promise.resolve()];
+      if (document.fonts && document.fonts.ready) jobs.push(document.fonts.ready.catch(function () {}));
+      return Promise.all(jobs);
     });
 
-    jobs.push(M.audio ? loadAudio() : Promise.resolve());
-
-    /* Font cũng phải xong. Mở thiệp ra mà chữ còn đang đổi mặt chữ thì cũng là
-       chưa sẵn sàng. */
-    if (document.fonts && document.fonts.ready) {
-      jobs.push(document.fonts.ready.catch(function () {}));
-    }
+    var jobs = [wave2];
 
     Promise.all(jobs).then(function () { clearTimeout(guard); finish(); });
   }

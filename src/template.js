@@ -31,7 +31,7 @@ function embed(value) {
 }
 
 /**
- * @param {{name: string, honorific: string, slug: string}|null} guest
+ * @param {{name: string, slug: string}|null} guest
  *        null = thiệp chung, không hiện tên ai.
  */
 function render(guest) {
@@ -39,7 +39,6 @@ function render(guest) {
 
   const payload = {
     name: guest.name,
-    honorific: guest.honorific || "",
     slug: guest.slug || "",
   };
   return `${HEAD}<script>window.GUEST=${embed(payload)}</script>${TAIL}`;

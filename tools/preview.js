@@ -23,9 +23,9 @@ require.cache[dbPath] = { id: dbPath, filename: dbPath, loaded: true, exports: d
 const { createApp } = require("../src/server");
 
 (async () => {
-  await db.createGuest({ slug: "tuan", name: "Nguyễn Quang Tuấn", honorific: "anh", groupName: "Nhà gái", note: "Bạn thân chú rể" });
-  await db.createGuest({ slug: "co-mai", name: "Cô Mai", honorific: "cô", groupName: "Họ hàng", note: "" });
-  await db.createGuest({ slug: "gia-dinh-hoa", name: "Gia đình anh Hoà", honorific: "gia đình", groupName: "Đồng nghiệp", note: "" });
+  await db.createGuest({ slug: "tuan", name: "anh Nguyễn Quang Tuấn", groupName: "Nhà gái", note: "Bạn thân chú rể" });
+  await db.createGuest({ slug: "co-mai", name: "cô Mai", groupName: "Họ hàng", note: "" });
+  await db.createGuest({ slug: "gia-dinh-hoa", name: "gia đình anh Hoà", groupName: "Đồng nghiệp", note: "" });
 
   const port = Number(process.env.PORT || 3000);
   createApp().listen(port, () => {

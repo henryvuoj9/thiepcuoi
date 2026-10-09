@@ -32,7 +32,9 @@ const SCHEMA = [
      id              INT UNSIGNED NOT NULL AUTO_INCREMENT,
      slug            VARCHAR(60)  NOT NULL,
      name            VARCHAR(120) NOT NULL,
-     honorific       VARCHAR(24)  NOT NULL DEFAULT '',
+     honorific       VARCHAR(24)  NOT NULL DEFAULT '',  -- không dùng nữa: xưng hô
+                                                       -- gõ thẳng vào ô tên. Giữ cột để
+                                                       -- không mất dữ liệu đã nhập.
      group_name      VARCHAR(60)  NOT NULL DEFAULT '',
      note            VARCHAR(255) NOT NULL DEFAULT '',
      opened_count    INT UNSIGNED NOT NULL DEFAULT 0,
@@ -132,18 +134,18 @@ async function listGroups() {
   return rows;
 }
 
-async function createGuest({ slug, name, honorific, groupName, note }) {
+async function createGuest({ slug, name, groupName, note }) {
   const rows = await query(
-    "INSERT INTO guests (slug, name, honorific, group_name, note) VALUES (?, ?, ?, ?, ?)",
-    [slug, name, honorific, groupName, note]
+    "INSERT INTO guests (slug, name, group_name, note) VALUES (?, ?, ?, ?)",
+    [slug, name, groupName, note]
   );
   return rows.insertId;
 }
 
-async function updateGuest(id, { slug, name, honorific, groupName, note }) {
+async function updateGuest(id, { slug, name, groupName, note }) {
   await query(
-    "UPDATE guests SET slug = ?, name = ?, honorific = ?, group_name = ?, note = ? WHERE id = ?",
-    [slug, name, honorific, groupName, note, id]
+    "UPDATE guests SET slug = ?, name = ?, group_name = ?, note = ? WHERE id = ?",
+    [slug, name, groupName, note, id]
   );
 }
 

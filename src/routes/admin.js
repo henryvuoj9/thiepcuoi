@@ -215,7 +215,7 @@ function guestRow(g, siteUrl, csrf) {
   else if (g.rsvp_attending === 0) rsvp = `<span class="no">Bận</span>`;
 
   return `<tr>
-    <td><strong>${esc(g.name)}</strong>${g.honorific ? ` <span class="dim">(${esc(g.honorific)})</span>` : ""}
+    <td><strong>${esc(g.name)}</strong>
         ${g.note ? `<br><span class="dim" style="font-size:12px">${esc(g.note)}</span>` : ""}</td>
     <td><a class="slug" href="/${esc(g.slug)}" target="_blank" rel="noopener">/${esc(g.slug)}</a></td>
     <td>${g.group_name ? `<span class="tag">${esc(g.group_name)}</span>` : ""}</td>
@@ -277,9 +277,7 @@ router.get("/", async (req, res, next) => {
       <form method="post" action="/admin/guests">
         <input type="hidden" name="_csrf" value="${esc(req.csrf)}">
         <div class="row">
-          <div><label for="n">Họ và tên</label><input id="n" name="name" required placeholder="Nguyễn Văn Tuấn"></div>
-          <div><label for="h">Xưng hô</label><input id="h" name="honorific" placeholder="anh" list="hons">
-            <datalist id="hons"><option>anh</option><option>chị</option><option>cô</option><option>chú</option><option>bác</option><option>em</option><option>gia đình</option></datalist></div>
+          <div><label for="n">Họ và tên</label><input id="n" name="name" required placeholder="anh Nguyễn Văn Tuấn"></div>
           <div><label for="s">Đường dẫn</label><input id="s" name="slug" class="slug" placeholder="tự sinh từ tên"></div>
           <div><label for="gr">Nhóm</label><input id="gr" name="group" placeholder="Nhà trai" list="grps">
             <datalist id="grps">${groups.map((g) => `<option>${esc(g.group_name)}</option>`).join("")}</datalist></div>
@@ -322,7 +320,6 @@ router.get("/", async (req, res, next) => {
 function readGuestForm(body) {
   return {
     name: String(body.name || "").trim().slice(0, 120),
-    honorific: String(body.honorific || "").trim().slice(0, 24),
     groupName: String(body.group || "").trim().slice(0, 60),
     note: String(body.note || "").trim().slice(0, 255),
     slug: String(body.slug || "").trim().toLowerCase(),
@@ -362,7 +359,7 @@ router.get("/guests/:id", async (req, res, next) => {
           <input type="hidden" name="_csrf" value="${esc(req.csrf)}">
           <div class="row">
             <div><label for="n">Họ và tên</label><input id="n" name="name" value="${esc(g.name)}" required></div>
-            <div><label for="h">Xưng hô</label><input id="h" name="honorific" value="${esc(g.honorific)}"></div>
+            <div></div>
           </div>
           <div class="row" style="margin-top:12px">
             <div><label for="s">Đường dẫn</label><input id="s" name="slug" class="slug" value="${esc(g.slug)}" required></div>
@@ -458,13 +455,13 @@ function csvCell(value) {
 router.get("/export.csv", async (req, res, next) => {
   try {
     const list = await db.listGuests({});
-    const header = ["Tên", "Xưng hô", "Đường dẫn", "Link đầy đủ", "Nhóm", "Ghi chú", "Số lần mở", "Mở lần cuối", "Xác nhận", "Số người"];
+    const header = ["Tên", "Đường dẫn", "Link đầy đủ", "Nhóm", "Ghi chú", "Số lần mở", "Mở lần cuối", "Xác nhận", "Số người"];
     const lines = [header.join(";")];
 
     for (const g of list) {
       lines.push(
         [
-          g.name, g.honorific, g.slug, `${config.siteUrl}/${g.slug}`, g.group_name, g.note,
+          g.name, g.slug, `${config.siteUrl}/${g.slug}`, g.group_name, g.note,
           g.opened_count,
           g.last_opened_at ? new Date(g.last_opened_at).toLocaleString("vi-VN") : "",
           g.rsvp_attending === 1 ? "Sẽ đến" : g.rsvp_attending === 0 ? "Bận" : "",

@@ -45,16 +45,14 @@ test("mỗi @font-face đều có unicode-range và font-display swap", () => {
   }
 });
 
-test("font Cormorant không bị nạp sẵn, font chữ ký thì có", () => {
+test("font Cormorant không bị nạp sẵn, font chữ ký nằm trong đợt một", () => {
   /* Nạp sẵn cả 26 tệp Cormorant là tải thừa nửa MB — unicode-range đã lo việc
      chỉ tải đúng bộ ký tự và đúng nét chữ mà trang dùng tới.
-     Ngược lại font chữ ký riêng của thiệp hiện ngay trên bìa, không có
-     unicode-range và chỉ 26 KB, nên phải nạp cùng màn bìa. */
-  const manifest = JSON.parse(/window\.__ASSETS=(\{.*?\})<\/script>/s.exec(HTML)[1]);
-  const urls = manifest.assets.map((a) => a.url);
-
-  assert.deepEqual(urls.filter((u) => u.includes("cormorant")), [], "Cormorant bị đưa vào danh sách nạp sẵn");
-  assert.ok(urls.some((u) => /\/assets\/script\.[a-z0-9]+\.woff2$/.test(u)), "thiếu font chữ ký trong danh sách nạp sẵn");
+     Font chữ ký thì ngược lại: hiện ngay trên bìa nên phải nằm trong đợt một. */
+  const m = JSON.parse(/window\.__ASSETS=(\{.*?\})<\/script>/s.exec(HTML)[1]);
+  const all = [...m.cover, ...m.assets].map((a) => a.url);
+  assert.deepEqual(all.filter((u) => u.includes("cormorant")), [], "Cormorant bị đưa vào danh sách nạp sẵn");
+  assert.ok(m.cover.some((a) => /\/assets\/script\.[a-z0-9]+\.woff2$/.test(a.url)), "font chữ ký phải ở đợt một");
 });
 
 test("font chữ ký được khai báo tải trước ở thẻ head", () => {
@@ -67,26 +65,22 @@ test("chỗ máy chủ chèn tên khách vẫn còn", () => {
 
 /* ---------- hành vi màn bìa ---------- */
 
-test("không tự mở; mở bằng nút, và nút chỉ ăn sau khi tải xong", () => {
-  /* Từng thử tự mở để người lớn tuổi khỏi phải thao tác, nhưng trình duyệt chỉ
-     cho phát nhạc sau một thao tác của người dùng — tự mở thì mất nhạc. Quay
-     lại nút bấm, nhưng làm hẳn một nút rõ ràng như gia đình góp ý, chứ không
-     bắt khách đoán là phải chạm vào phong bì. */
+test("không tự mở; hướng dẫn bằng chữ ngay dưới con tem", () => {
+  /* Tự mở thì mất nhạc (trình duyệt đòi một thao tác của người dùng). Nút bấm
+     thì chủ thiệp thấy nặng nề. Kết cục: cả bìa chạm được, kèm một dòng chữ
+     hướng dẫn ngay dưới con tem. */
   assert.ok(!HTML.includes("const autoOpen"), "không được còn hẹn giờ tự mở");
-  assert.match(HTML, /<button class="opener" id="opener" type="button">Mở phong bì<\/button>/);
-  assert.match(HTML, /\$\("opener"\)\.addEventListener\("click"/);
-  /* Chưa tải xong thì nút trong suốt và không nhận cú bấm. */
-  assert.match(HTML, /\.cover \.opener\{[^}]*opacity:0;pointer-events:none/);
-  assert.match(HTML, /\.cover\.ready \.opener\{opacity:1;pointer-events:auto/);
+  assert.ok(!HTML.includes('id="opener"'), "nút mở đã bỏ");
+  assert.match(HTML, /<p class="sc openhint" id="openHint">Chạm để mở phong bì<\/p>/);
+  /* Chưa tải xong thì dòng hướng dẫn trong suốt — mời chạm lúc ấy chỉ gây bực. */
+  assert.match(HTML, /\.cover \.openhint\{[^}]*opacity:0/);
+  assert.match(HTML, /\.cover\.ready \.openhint\{opacity:1/);
 });
 
 test("nền giấy được tách ra tệp riêng, không nhúng base64", () => {
   assert.match(HTML, /--paper:url\(\/assets\/paper\.[a-z0-9]+\.jpg\)/);
 });
 
-test("xưng hô hiện trước tên khách trên bìa", () => {
-  assert.match(HTML, /honCap \? honCap \+ " " : ""/);
-});
 
 test("chưa tải xong thì chạm cũng không mở được thiệp", () => {
   /* Yêu cầu của chủ thiệp: mở ra là phải thấy đủ, không có ảnh nào nhảy vào
@@ -180,18 +174,12 @@ test("tấm thẻ không được vừa có left+right vừa có aspect-ratio", 
   assert.ok(!rule.includes("right:5%"), "còn dùng right:5% cùng aspect-ratio");
 });
 
-test("khách không khai xưng hô thì không hiện chữ mẫu", () => {
-  assert.match(HTML, /if \(gName\) \{ D\.guest = gName; D\.honorific = gHon;/);
-  assert.match(HTML, /replace\(\/\\s\+\/g, " "\)\.trim\(\)/, "lời kết phải gộp khoảng trắng thừa");
-});
 
-test("lời cảm ơn sau khi xác nhận chạy theo xưng hô, không hardcode", () => {
+test("lời cảm ơn sau khi xác nhận không hardcode xưng hô", () => {
   assert.ok(!HTML.includes("Cảm ơn anh/chị"), "còn hardcode xưng hô");
   assert.ok(!HTML.includes("Chúng mình"), "còn xưng hô cũ của gia chủ");
   assert.match(HTML, /thanksTitle: "Cảm ơn quý khách"/);
-  assert.match(HTML, /thanksBody: "Chúng tôi đã nhận được xác nhận\. Hẹn gặp quý khách trong ngày vui!"/);
-  /* Bộ thay chỗ vẫn còn, nên đổi sang gọi đích danh chỉ là sửa chuỗi trong DATA. */
-  assert.match(HTML, /const fillGuest = t => t\.replace\(.*dedupHon\(\)\)/);
+  assert.match(HTML, /const fillGuest = t => t\.replace\(\/\\\{g\\\}\/g, D\.guest\)/);
 });
 
 /* ---------- bản burgundy, theo góp ý của gia đình ---------- */
@@ -214,12 +202,13 @@ test("khối xác nhận cùng nền đỏ với khối lịch trình", () => {
   assert.equal(rsvp, agenda, "hai khối phải cùng một màu nền");
 });
 
-test("lời mời và lời kết gọi đúng tên khách", () => {
-  assert.match(HTML, /announce: "Trân trọng kính mời \{x\} \{g\} đến tham dự/);
-  assert.match(HTML, /closing: "Sự hiện diện của \{x\} \{g\} sẽ là niềm vui/);
-  assert.match(HTML, /announceGeneric: "Trân trọng kính mời quý khách/);
-  assert.match(HTML, /closingGeneric: "Sự hiện diện của quý khách/);
-  assert.match(HTML, /\$\("announce"\)\.textContent = D\.guest \? fillGuest\(D\.announce\) : D\.announceGeneric;/);
+test("lời mời và lời kết gọi đúng tên khách, ngắt ba dòng", () => {
+  /* Xưng hô gõ thẳng vào ô tên nên chỉ còn một chỗ thay: {g}. */
+  assert.ok(!/\{x\}/.test(HTML), "không được còn chỗ thay xưng hô");
+  assert.match(HTML, /announce: "Trân trọng kính mời \{g\} đến tham dự tiệc cưới của hai con chúng tôi<br>và chung vui cùng gia đình<br>trong ngày đặc biệt này\."/);
+  assert.match(HTML, /closing: "Sự hiện diện của \{g\} sẽ là niềm vui/);
+  assert.match(HTML, /\$\("announce"\)\.innerHTML = D\.guest \? fillGuest\(D\.announce\) : D\.announceGeneric;/,
+    "textContent sẽ in ra chữ <br>");
 });
 
 test("ảnh khách sạn được tách ra tệp riêng", () => {
@@ -233,11 +222,16 @@ test("đã bỏ số điện thoại và dòng liên hệ cô dâu chú rể", (
   assert.ok(!HTML.includes("liên hệ cô dâu chú rể"), "còn dòng liên hệ");
 });
 
-test("giờ tiệc là 18h00 trên mọi chỗ", () => {
-  assert.match(HTML, /weddingDate: "2026-11-16T18:00:00\+07:00"/, "mốc đếm ngược");
-  assert.match(HTML, /calStart: "20261116T180000"/, "giờ trong lịch Google");
-  assert.match(HTML, /whenTime: "18h00"/, "giờ hiển thị");
-  assert.match(HTML, /\{ t: "18:00", l: "Đón khách"/, "lịch trình bắt đầu 18:00");
+test("giờ tiệc là 17h45 trên mọi chỗ, lịch trình ba mục", () => {
+  assert.match(HTML, /weddingDate: "2026-11-16T17:45:00\+07:00"/, "mốc đếm ngược");
+  assert.match(HTML, /calStart: "20261116T174500"/, "giờ trong lịch Google");
+  assert.match(HTML, /whenTime: "17h45"/, "giờ hiển thị");
+  const tl = /timeline: \[([\s\S]*?)\]/.exec(HTML)[1];
+  assert.equal((tl.match(/\{ t:/g) || []).length, 3, "đúng ba mục");
+  assert.match(tl, /\{ t: "17:45", l: "Đón khách"/);
+  assert.match(tl, /\{ t: "18:15", l: "Lễ thành hôn"/);
+  assert.match(tl, /\{ t: "18:30", l: "Khai tiệc"/);
+  assert.ok(tl.indexOf("Lễ thành hôn") < tl.indexOf("Khai tiệc"), "lễ thành hôn trước khai tiệc");
 });
 
 test("ngày đứng trước giờ và bằng cỡ giờ", () => {
@@ -253,13 +247,6 @@ test("ngày đứng trước giờ và bằng cỡ giờ", () => {
   assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* \.85\)/);
 });
 
-test("không lặp xưng hô khi tên khách đã có sẵn", () => {
-  /* Nhiều người nhập "Cô Mai" vào ô tên rồi lại chọn xưng hô "cô" — ghép thêm
-     sẽ ra "cô Cô Mai" ngay trên thiệp cưới. */
-  assert.match(HTML, /const dedupHon = \(\) => \{/);
-  assert.match(HTML, /x && g\.toLowerCase\(\)\.indexOf\(x\.toLowerCase\(\) \+ " "\) === 0 \? "" : x/);
-  assert.match(HTML, /const hon = dedupHon\(\);/, "bìa thiệp cũng phải dùng cùng phép khử trùng");
-});
 
 test("tiêu đề tab không dính dấu phiên bản của bản xem thử", () => {
   /* Bản xem thử đứng riêng có đóng dấu "[BURGUNDY ngày giờ]" vào tiêu đề để
@@ -286,11 +273,9 @@ test("trang không có ký tự lạ trước thẻ doctype", () => {
 });
 
 test("bìa luôn có lời mời, kể cả khi không biết khách là ai", () => {
-  /* Trước đây khối này bị ẩn hẳn với người vào thiệp chung, làm bìa trống trải
-     trông như thiệp hỏng. */
-  assert.match(HTML, /\$\("guestName"\)\.textContent = D\.guest \? \(\(honCap \? honCap \+ " " : ""\) \+ D\.guest\) : "quý khách";/);
+  assert.match(HTML, /\$\("guestName"\)\.textContent = D\.guest \|\| "quý khách";/);
   assert.ok(!HTML.includes('getElementById("guestBlock"); if (gb) gb.style.display = "none"'),
-    "không được ẩn khối lời mời nữa");
+    "không được ẩn khối lời mời");
 });
 
 test("nhạc bị trình duyệt chặn thì nút nhạc nhấp nháy mời chạm", () => {
@@ -312,13 +297,26 @@ test("dòng ngày ngắt làm hai để to lên được", () => {
   assert.match(HTML, /\$\("whenDate"\)\.innerHTML = D\.whenDate;/, "textContent sẽ in ra chữ <br>");
 });
 
-test("vòng tiến trình không đè lên lời mời", () => {
-  /* Vòng rộng 1.2x con tem nên mép dưới ở 0.60x tính từ tâm; lời mời đặt ở
-     0.80x. Trước đây vòng rộng 1.44x (mép dưới 0.72x) và lời mời ở 0.62x
-     nên hai cái chồng lên nhau. */
+test("vòng tiến trình, dòng hướng dẫn và lời mời không đè nhau", () => {
   const ring = parseFloat(/\.ring\{[^}]*width:calc\(var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
+  const hint = parseFloat(/\.cover \.openhint\{[^}]*top:calc\(var\(--c-tip\) \+ var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
   const guest = parseFloat(/\.cover \.guest\{[^}]*top:calc\(var\(--c-tip\) \+ var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
-  const opener = parseFloat(/\.cover \.opener\{[^}]*top:calc\(var\(--c-tip\) \+ var\(--c-stamp\) \* ([\d.]+)\)/.exec(HTML)[1]);
-  assert.ok(guest > ring / 2 + 0.1, `lời mời (${guest}x) phải nằm dưới mép vòng tải (${ring / 2}x)`);
-  assert.ok(opener > guest + 0.3, `nút (${opener}x) phải nằm dưới lời mời (${guest}x)`);
+  assert.ok(hint > ring / 2 + 0.05, `hướng dẫn (${hint}x) phải nằm dưới mép vòng tải (${ring / 2}x)`);
+  assert.ok(guest > hint + 0.2, `lời mời (${guest}x) phải nằm dưới hướng dẫn (${hint}x)`);
+});
+
+test("không còn dấu vết của tham số xưng hô", () => {
+  /* Chủ thiệp bỏ ô xưng hô trong CRM; xưng hô gõ thẳng vào ô tên. */
+  assert.ok(!HTML.includes("honorific"), "còn tham chiếu tới xưng hô");
+  assert.ok(!HTML.includes("dedupHon"), "còn phép khử trùng xưng hô");
+  assert.ok(!HTML.includes('qs.get("x")'), "còn đọc tham số x trên URL");
+});
+
+test("có tiêu đề trước đồng hồ đếm ngược", () => {
+  assert.match(HTML, /<p class="sc rv" style="margin:0 0 12px">Còn<\/p>\s*<div class="count/);
+});
+
+test("hạn xác nhận và chỉ dẫn gửi xe theo bản mới", () => {
+  assert.match(HTML, /rsvpDeadline: "10\/11\/2026"/);
+  assert.match(HTML, /\["Tầng hầm dành cho các phương tiện",/);
 });
