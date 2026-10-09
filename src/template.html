@@ -51,10 +51,10 @@
     --h-card-top:14%; --h-card-pad:21%; --h-card-sc:12px; --h-card-names:21px; --h-card-gap:12px; --h-oval-w:44%; --h-oval-left:-11%; --h-oval-top:-2%; --h-orchid-w:31%; --h-orchid-left:-8%; --h-orchid-bottom:-2%; --h-swan-w:34%; --h-swan-right:-3%; --h-swan-bottom:2%;
     --i-sc:14px;
     /* Ngày và giờ dùng CHUNG một cỡ chữ để không bao giờ lệch nhau.
-       0.85x là mức lớn nhất mà dòng "16 Tháng 11, 2026" còn nằm gọn một dòng
-       trên màn hẹp nhất — đo bằng số đo thật của font chữ ký. Biến này tự
+       1.05x là mức lớn nhất mà dòng "16 Tháng 11, 2026" còn nằm gọn một dòng
+       trên màn hẹp nhất — đo bằng số đo thật của Cormorant Garamond. Biến này tự
        cập nhật theo --i-venue của từng cỡ màn hình. */
-    --when-size:calc(var(--i-venue) * .85); --i-announce:15px; --i-announce-gap:72px; --i-names:30px; --i-names-gap:44px; --i-venue:40px; --i-when:40px; --i-sec-pad:64px; --i-line:1.7; --t-icon:108px; --t-time:20px; --r-title:22px;
+    --when-size:calc(var(--i-venue) * 1.05); --i-announce:15px; --i-announce-gap:72px; --i-names:30px; --i-names-gap:44px; --i-venue:40px; --i-when:40px; --i-sec-pad:64px; --i-line:1.7; --t-icon:108px; --t-time:20px; --r-title:22px;
     --script:"New Icon Script VN","Pinyon Script",cursive;
     --sc:"Cormorant SC","Cormorant Garamond",Georgia,serif;
     --serif:"Cormorant Garamond",Georgia,serif;
@@ -649,7 +649,7 @@
       <div class="fam"><p class="sc">Nhà trai</p><p class="fit gF" id="groomParents"></p></div>
       <div class="fam"><p class="sc">Nhà gái</p><p class="fit gF" id="brideParents"></p></div>
     </div>
-    <p class="copy rv d1" style="margin-top:var(--i-announce-gap);font-size:21px;font-weight:600;font-style:normal;max-width:400px;text-wrap:balance" id="announce"></p>
+    <p class="copy rv d1" style="margin-top:var(--i-announce-gap);font-size:clamp(15px,4.2vw,19px);font-weight:600;font-style:normal;max-width:none;text-wrap:balance" id="announce"></p>
     <h2 class="script names-big rv d1" id="infoNames"></h2>
     <div class="rule rv d2"></div>
     <p class="sc rv d2">Được tổ chức tại</p>
@@ -659,7 +659,7 @@
     <div class="map rv d2"><iframe id="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="Bản đồ địa điểm"></iframe></div>
     <div class="park rv d2" id="park"></div>
     <p class="sc rv d3" style="margin-top:44px">Vào lúc</p>
-    <div class="when rv d3" style="margin-top:14px"><span class="script" id="whenDate" style="display:block;font-size:var(--when-size);line-height:1.1"></span><span class="script" id="whenTime" style="display:block;font-size:var(--when-size);line-height:1.1;margin-top:10px"></span></div>
+    <div class="when rv d3" style="margin-top:14px"><span id="whenDate" style="display:block;font-family:var(--serif);font-weight:600;color:var(--ink);font-size:var(--when-size);line-height:1.2"></span><span id="whenTime" style="display:block;font-family:var(--serif);font-weight:600;color:var(--ink);font-size:var(--when-size);line-height:1.2;margin-top:8px"></span></div>
     <p class="rv d3" style="margin:40px 0 0"><a class="pill" href="#rsvp" id="toRsvp">Xác nhận tham dự</a></p>
     <p class="copy rv d3" style="margin-top:34px;font-size:19px;font-weight:600;font-style:normal;max-width:360px;text-wrap:balance" id="closing"></p>
   </section>
@@ -717,8 +717,8 @@ window.DATA = {
   photo: "/assets/photo.6274e23e.jpg",
   groomParents: ["Ông", "Vũ Hữu Công", "Bà", "Bùi Thanh Hằng"],   // [xưng, tên, xưng, tên] — tên sẽ in đậm
   brideParents: ["Ông", "Nguyễn Quang Tuấn", "Bà", "Lê Minh Hằng"],
-  announce: "Trân trọng kính mời {g} đến tham dự tiệc cưới của hai con chúng tôi<br>và chung vui cùng gia đình<br>trong ngày đặc biệt này.",
-  announceGeneric: "Trân trọng kính mời quý khách đến tham dự tiệc cưới của hai con chúng tôi<br>và chung vui cùng gia đình<br>trong ngày đặc biệt này.",
+  announce: "Trân trọng kính mời {g} đến tham dự tiệc cưới của hai con chúng tôi và chung vui cùng gia đình trong ngày đặc biệt này.",
+  announceGeneric: "Trân trọng kính mời quý khách đến tham dự tiệc cưới của hai con chúng tôi và chung vui cùng gia đình trong ngày đặc biệt này.",
   venue: "Khách sạn Pan Pacific", address: "Số 1 Đường Thanh Niên, phường Ba Đình, Hà Nội",
   parking: [
     ["Vào sảnh chính", "Cổng chính tại số 1 Đường Thanh Niên."],
@@ -774,7 +774,7 @@ const ICONS = {
   $("envInitials").innerHTML = D.initials.split("").join(" &amp; "); $("monoInitials").textContent = D.initials;
   const par = a => `${a[0]} <b>${a[1]}</b><br>${a[2]} <b>${a[3]}</b>`;
   $("groomParents").innerHTML = par(D.groomParents); $("brideParents").innerHTML = par(D.brideParents);
-  $("announce").innerHTML = D.guest ? fillGuest(D.announce) : D.announceGeneric; $("venue").textContent = D.venue; $("address").textContent = D.address;
+  $("announce").textContent = D.guest ? fillGuest(D.announce) : D.announceGeneric; $("venue").textContent = D.venue; $("address").textContent = D.address;
   $("whenTime").textContent = D.whenTime; $("whenDate").innerHTML = D.whenDate; $("closing").textContent = D.closing; $("footerClosing").textContent = D.closing;
   /* Hai câu cảm ơn vẫn đi qua bộ thay chỗ, nên muốn gọi đích danh về sau thì
      chỉ cần viết {g} vào chuỗi trong window.DATA, không phải sửa mã. */

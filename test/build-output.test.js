@@ -202,13 +202,26 @@ test("khối xác nhận cùng nền đỏ với khối lịch trình", () => {
   assert.equal(rsvp, agenda, "hai khối phải cùng một màu nền");
 });
 
-test("lời mời và lời kết gọi đúng tên khách, ngắt ba dòng", () => {
-  /* Xưng hô gõ thẳng vào ô tên nên chỉ còn một chỗ thay: {g}. */
+test("lời mời gọi đúng tên khách và luôn ra ba dòng lề đều", () => {
+  /* Ngắt tay sau "tôi" và "đình" là bất khả thi: riêng đoạn tới chữ "tôi" đã
+     dài 35 lần cỡ chữ, muốn nằm trọn một dòng thì cỡ chữ phải là 9.5px. Ngắt
+     tay cộng với tự xuống dòng cho ra bốn dòng lệch lạc. Bỏ ngắt tay, để
+     text-wrap:balance chia đều, và cho cỡ chữ co giãn theo bề ngang màn hình
+     để luôn vừa ba dòng — kể cả với tên khách dài. */
   assert.ok(!/\{x\}/.test(HTML), "không được còn chỗ thay xưng hô");
-  assert.match(HTML, /announce: "Trân trọng kính mời \{g\} đến tham dự tiệc cưới của hai con chúng tôi<br>và chung vui cùng gia đình<br>trong ngày đặc biệt này\."/);
+  assert.match(HTML, /announce: "Trân trọng kính mời \{g\} đến tham dự tiệc cưới của hai con chúng tôi và chung vui cùng gia đình trong ngày đặc biệt này\."/);
+  assert.ok(!/announce: "[^"]*<br>/.test(HTML), "không được ngắt dòng bằng tay");
   assert.match(HTML, /closing: "Sự hiện diện của \{g\} sẽ là niềm vui/);
-  assert.match(HTML, /\$\("announce"\)\.innerHTML = D\.guest \? fillGuest\(D\.announce\) : D\.announceGeneric;/,
-    "textContent sẽ in ra chữ <br>");
+  /* Thứ tự thuộc tính trong thẻ không cố định — lấy cả thẻ rồi mới soi. */
+  const tag = /<p[^>]*id="announce"[^>]*>/.exec(HTML)[0];
+  assert.match(tag, /font-size:clamp\(15px,4\.2vw,19px\)/);
+  assert.match(tag, /text-wrap:balance/);
+});
+
+test("tên khách không bị diễn giải thành HTML", () => {
+  /* Khi lời mời còn chứa <br> thì nó phải gán bằng innerHTML — và tên khách
+     cũng theo đó thành HTML. Bỏ <br> rồi thì quay về textContent. */
+  assert.match(HTML, /\$\("announce"\)\.textContent = D\.guest \? fillGuest\(D\.announce\)/);
 });
 
 test("ảnh khách sạn được tách ra tệp riêng", () => {
@@ -244,7 +257,13 @@ test("ngày đứng trước giờ và bằng cỡ giờ", () => {
     "dòng ngày không được dùng hàm tự co nữa");
   assert.match(when, /id="whenDate"[^>]*font-size:var\(--when-size\)/);
   assert.match(when, /id="whenTime"[^>]*font-size:var\(--when-size\)/);
-  assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* \.85\)/);
+  assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* 1\.05\)/);
+  /* Chủ thiệp muốn ngày giờ dùng phông chữ thường thay vì phông chữ ký. Tiện
+     thể to lên được: Cormorant Garamond hẹp hơn nên trần tăng từ 0.88x lên
+     1.05x mà vẫn nằm trọn một dòng trên màn hẹp nhất. */
+  assert.match(when, /id="whenDate"[^>]*font-family:var\(--serif\)/);
+  assert.match(when, /id="whenTime"[^>]*font-family:var\(--serif\)/);
+  assert.ok(!/id="whenDate"[^>]*class="script"/.test(HTML), "ngày không còn dùng phông chữ ký");
 });
 
 
