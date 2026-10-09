@@ -257,13 +257,12 @@ test("ngày đứng trước giờ và bằng cỡ giờ", () => {
     "dòng ngày không được dùng hàm tự co nữa");
   assert.match(when, /id="whenDate"[^>]*font-size:var\(--when-size\)/);
   assert.match(when, /id="whenTime"[^>]*font-size:var\(--when-size\)/);
-  assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* 1\.05\)/);
-  /* Chủ thiệp muốn ngày giờ dùng phông chữ thường thay vì phông chữ ký. Tiện
-     thể to lên được: Cormorant Garamond hẹp hơn nên trần tăng từ 0.88x lên
-     1.05x mà vẫn nằm trọn một dòng trên màn hẹp nhất. */
-  assert.match(when, /id="whenDate"[^>]*font-family:var\(--serif\)/);
-  assert.match(when, /id="whenTime"[^>]*font-family:var\(--serif\)/);
-  assert.ok(!/id="whenDate"[^>]*class="script"/.test(HTML), "ngày không còn dùng phông chữ ký");
+  assert.match(HTML, /--when-size:calc\(var\(--i-venue\) \* \.85\)/);
+  /* Thử phông chữ thường rồi chủ thiệp muốn quay về phông chữ ký. Phông chữ ký
+     rộng hơn nên trần tụt từ 1.05x về 0.88x — dùng 0.85x cho an toàn. */
+  assert.match(when, /class="script" id="whenDate"/);
+  assert.match(when, /class="script" id="whenTime"/);
+  assert.ok(!/id="when(Date|Time)"[^>]*font-family:var\(--serif\)/.test(HTML), "đã quay về phông chữ ký");
 });
 
 
