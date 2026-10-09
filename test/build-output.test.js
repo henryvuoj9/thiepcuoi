@@ -263,6 +263,9 @@ test("ngày đứng trước giờ và bằng cỡ giờ", () => {
   assert.match(when, /class="script" id="whenDate"/);
   assert.match(when, /class="script" id="whenTime"/);
   assert.ok(!/id="when(Date|Time)"[^>]*font-family:var\(--serif\)/.test(HTML), "đã quay về phông chữ ký");
+  /* Màu burgundy do lớp .script gán — không được có khai báo màu nội tuyến đè lên. */
+  assert.ok(!/id="when(Date|Time)"[^>]*color:/.test(HTML), "màu phải để lớp .script quyết");
+  assert.match(HTML, /\.script\{font-family:var\(--script\)[^}]*color:var\(--brown\)\}/);
 });
 
 
