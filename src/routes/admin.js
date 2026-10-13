@@ -419,11 +419,20 @@ router.get("/rsvps", async (req, res, next) => {
     const rows = list
       .map(
         (r) => `<tr>
-          <td><strong>${esc(r.name)}</strong>${r.slug ? `<br><span class="slug dim">/${esc(r.slug)}</span>` : ""}</td>
+          <td><strong>${esc(r.name)}</strong>${
+            r.slug
+              ? `<br><span class="slug dim">/${esc(r.slug)}</span>`
+              : `<br><span class="dim" style="font-size:12px">gửi từ thiệp chung</span>`
+          }</td>
           <td>${r.group_name ? `<span class="tag">${esc(r.group_name)}</span>` : ""}</td>
           <td>${r.attending ? `<span class="ok">Sẽ đến</span>` : `<span class="no">Bận</span>`}</td>
           <td>${r.attending ? r.party_size : ""}</td>
           <td class="dim">${new Date(r.created_at).toLocaleString("vi-VN")}</td>
+          <td><form method="post" action="/admin/rsvps/${r.id}/delete"
+                    onsubmit="return confirm('Xoá xác nhận của ${esc(r.name).replace(/'/g, "\\'")}?')">
+            <input type="hidden" name="_csrf" value="${esc(req.csrf)}">
+            <button class="btn sm danger" type="submit">Xoá</button>
+          </form></td>
         </tr>`
       )
       .join("");
@@ -435,11 +444,20 @@ router.get("/rsvps", async (req, res, next) => {
         flash: flashOf(req),
         body: list.length
           ? `<div class="panel"><div class="scroll"><table>
-               <thead><tr><th>Khách</th><th>Nhóm</th><th>Trả lời</th><th>Số người</th><th>Lúc</th></tr></thead>
+               <thead><tr><th>Khách</th><th>Nhóm</th><th>Trả lời</th><th>Số người</th><th>Lúc</th><th></th></tr></thead>
                <tbody>${rows}</tbody></table></div></div>`
           : `<div class="panel"><p class="dim" style="margin:0">Chưa ai xác nhận.</p></div>`,
       })
     );
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/rsvps/:id/delete", requireCsrf, async (req, res, next) => {
+  try {
+    await db.deleteRsvp(req.params.id);
+    back(res, "/admin/rsvps", true, "Đã xoá xác nhận.");
   } catch (err) {
     next(err);
   }

@@ -185,6 +185,10 @@ async function createRsvp({ guestId, slug, name, attending, partySize }) {
   );
 }
 
+async function deleteRsvp(id) {
+  await query("DELETE FROM rsvps WHERE id = ?", [id]);
+}
+
 async function listRsvps() {
   return query(
     `SELECT r.*, g.group_name
@@ -232,5 +236,5 @@ module.exports = {
   query, getPool, close, ensureSchema,
   guestBySlug, guestById, slugTaken, listGuests, listGroups,
   createGuest, updateGuest, deleteGuest, recordOpen,
-  createRsvp, listRsvps, stats,
+  createRsvp, listRsvps, deleteRsvp, stats,
 };

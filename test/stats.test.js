@@ -25,6 +25,10 @@ const rsvp = (body) =>
     body: JSON.stringify(body),
   });
 
+function csrfOf(html) {
+  return /name="_csrf" value="([^"]+)"/.exec(html)[1];
+}
+
 /** Đọc các con số ngay từ bảng điều khiển, như chủ thiệp nhìn thấy. */
 async function dashboardNumbers() {
   const html = await (await admin("/admin")).text();
@@ -85,4 +89,47 @@ test("người vào thiệp chung vẫn được tính", async () => {
   assert.equal(n["Khách mời"], 0);
   assert.equal(n["Nhận lời"], 1);
   assert.equal(n["Tổng người đến"], 2);
+});
+
+test("xoá được từng dòng xác nhận, kể cả dòng không gắn với khách nào", async () => {
+  /* Chủ thiệp xoá hết khách mà bảng vẫn báo 3 người nhận lời. Hoá ra đó là các
+     xác nhận gửi từ thiệp chung — không gắn khách nên không phải dòng mồ côi,
+     phép đếm không sai. Thiếu là thiếu cách xoá chúng: CRM chỉ xoá được khách. */
+  /* Các kiểm thử trong tệp này dùng chung trạng thái, nên đo theo mức chênh. */
+  const before = await dashboardNumbers();
+  await rsvp({ name: "Người thử nghiệm", attending: true, guests: 2 });
+
+  let n = await dashboardNumbers();
+  assert.equal(n["Khách mời"], 0, "không có khách nào");
+  assert.equal(n["Nhận lời"], before["Nhận lời"] + 1, "vẫn đếm xác nhận từ thiệp chung");
+
+  const page = await (await admin("/admin/rsvps")).text();
+  assert.match(page, /gửi từ thiệp chung/, "phải nói rõ dòng này từ đâu tới");
+  /* Dòng mới nhất nằm trên cùng — bảng sắp xếp giảm dần theo id. */
+  const id = /\/admin\/rsvps\/(\d+)\/delete/.exec(page)[1];
+
+  await admin(`/admin/rsvps/${id}/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ _csrf: csrfOf(page) }).toString(),
+  });
+
+  n = await dashboardNumbers();
+  assert.equal(n["Nhận lời"], before["Nhận lời"], "xoá xong phải về mức cũ");
+  assert.equal(n["Tổng người đến"], before["Tổng người đến"]);
+  assert.ok(!(await (await admin("/admin/rsvps")).text()).includes("Người thử nghiệm"));
+});
+
+test("không có token CSRF thì không xoá được xác nhận", async () => {
+  await rsvp({ name: "Khách cần giữ", attending: true, guests: 1 });
+  const page = await (await admin("/admin/rsvps")).text();
+  const id = /\/admin\/rsvps\/(\d+)\/delete/.exec(page)[1];
+
+  const res = await admin(`/admin/rsvps/${id}/delete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: "",
+  });
+  assert.equal(res.status, 403);
+  assert.match(await (await admin("/admin/rsvps")).text(), /Khách cần giữ/);
 });

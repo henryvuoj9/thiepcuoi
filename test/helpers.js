@@ -9,7 +9,7 @@ const { hashPassword } = require("../src/auth");
 const PASSWORD = "mat-khau-rat-dai-123";
 
 function makeFakeDb() {
-  const state = { guests: [], rsvps: [], nextGuestId: 1 };
+  const state = { guests: [], rsvps: [], nextGuestId: 1, nextRsvpId: 1 };
 
   /* Dòng xác nhận còn "sống": không trỏ tới khách nào, hoặc trỏ tới khách còn tồn tại. */
   const alive = (r) => r.guestId == null || state.guests.some((g) => String(g.id) === String(r.guestId));
@@ -64,7 +64,10 @@ function makeFakeDb() {
       g.last_opened_at = new Date();
     },
     async createRsvp(row) {
-      state.rsvps.push({ ...row, id: state.rsvps.length + 1, created_at: new Date() });
+      state.rsvps.push({ ...row, id: state.nextRsvpId++, created_at: new Date() });
+    },
+    async deleteRsvp(id) {
+      state.rsvps = state.rsvps.filter((r) => String(r.id) !== String(id));
     },
     async listRsvps() {
       return [...state.rsvps].filter(alive).reverse();
